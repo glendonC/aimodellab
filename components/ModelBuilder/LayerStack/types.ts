@@ -13,5 +13,8 @@ export const LAYER_RULES: Record<LayerType, LayerType[]> = {
   rnn: ['rnn', 'dropout', 'output'],
   dropout: ['mlp', 'transformer', 'rnn', 'output'],
   embedding: ['transformer', 'rnn'],
-  output: []
+  output: [],
+  graph: ['mlp', 'dropout', 'output'],
+  residual: ['mlp', 'dropout', 'output'],
+  normalization: ['mlp', 'dropout', 'output']
 };

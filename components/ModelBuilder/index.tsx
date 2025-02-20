@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Play, Code } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ComponentLibrary } from './ComponentLibrary';
-import { LayerStack } from './LayerStack';
+import { LayerStack } from './LayerStack/index';
 import { NvidiaInsightsPanel } from './NvidiaInsightsPanel';
 import { CodeExportPanel } from './CodeExportPanel';
 import { ModelNode } from '@/lib/model/types';
