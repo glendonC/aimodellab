@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Copy, Download, Check, Code, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ModelNode } from '@/lib/model/types';
+import { CodeGenerator } from '@/lib/model/codeGenerator';
 
 type CodeExportPanelProps = {
   isOpen: boolean;
@@ -21,35 +22,26 @@ export function CodeExportPanel({
 }: CodeExportPanelProps) {
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [code, setCode] = useState('');
+  
+  const codeGenerator = new CodeGenerator();
 
-  const mockCode = `import tensorflow as tf
-from tensorflow.keras import layers, models
-
-model = models.Sequential([
-    layers.Conv2D(32, (3,3), activation='relu', input_shape=(224, 224, 3)),
-    layers.MaxPooling2D(2,2),
-    layers.Conv2D(64, (3,3), activation='relu'),
-    layers.MaxPooling2D(2,2),
-    layers.Flatten(),
-    layers.Dense(128, activation='relu'),
-    layers.Dropout(0.5),
-    layers.Dense(10, activation='softmax')
-])
-
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-model.summary()`;
-
-  // Simulate loading delay
-  useState(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  });
+  // Generate code when panel opens
+  useEffect(() => {
+    if (isOpen) {
+      setIsLoading(true);
+      // Simulate loading delay
+      setTimeout(() => {
+        const generatedCode = codeGenerator.generatePythonCode(nodes);
+        setCode(generatedCode);
+        setIsLoading(false);
+      }, 1000);
+    }
+  }, [isOpen, nodes]);
 
   const handleCopyCode = async () => {
     try {
-      await navigator.clipboard.writeText(mockCode);
+      await navigator.clipboard.writeText(code);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -58,7 +50,7 @@ model.summary()`;
   };
 
   const handleDownloadCode = () => {
-    const blob = new Blob([mockCode], { type: 'text/plain' });
+    const blob = new Blob([code], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -143,7 +135,7 @@ model.summary()`;
                     "p-4 rounded-lg",
                     powerMode ? "bg-black/60 text-white" : "bg-white text-black border"
                   )}>
-                    <code>{mockCode}</code>
+                    <code>{code}</code>
                   </pre>
                 </div>
 
