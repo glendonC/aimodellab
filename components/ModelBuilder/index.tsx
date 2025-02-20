@@ -9,8 +9,7 @@ import { LayerStack } from './LayerStack/index';
 import { NvidiaInsightsPanel } from './NvidiaInsightsPanel';
 import { CodeExportPanel } from './CodeExportPanel';
 import { ModelNode } from '@/lib/model/types';
-import { ModelSimulator } from '@/lib/model/simulator';
-import { SimulationResult } from '@/lib/model/types';
+import { ModelSimulator, SimulationResult } from '@/lib/model/simulator';
 
 type ModelBuilderProps = {
   powerMode: boolean;
