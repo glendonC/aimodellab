@@ -51,6 +51,10 @@ export type AnalysisResult = {
     memoryPeak: number;
     deviceUtilization: number;
   };
+  validation: {
+    errors: string[];
+    bottlenecks: string[];
+  };
 };
 
 export type ComparisonMode = 'side-by-side' | 'overlay';

@@ -504,7 +504,7 @@ export function ModelTemplates({ powerMode, onSelectTemplate }: ModelTemplatesPr
 
               {/* Layer count badge */}
               <div className={cn(
-                "absolute top-3 right-3 px-2 py-1 rounded-full text-xs",
+                "absolute top-3 right-3 px-2 py-1 rounded-full text-xs max-w-[60px] truncate",
                 powerMode
                   ? "bg-cyan-500/20 text-cyan-400"
                   : "bg-blue-100 text-blue-600"

@@ -5,6 +5,11 @@ export type SimulationResult = {
   performance: PerformanceMetrics;
   warnings: SimulationWarning[];
   optimizationTips: OptimizationTip[];
+  metrics: Array<{
+    name: string;
+    value: number | string;
+  }>;
+  details: string[]; // Added to store simulation details
 };
 
 type LayerSimResult = {
@@ -43,13 +48,18 @@ export class ModelSimulator {
     const layerResults: LayerSimResult[] = [];
     const warnings: SimulationWarning[] = [];
     let currentShape = nodes[0]?.inputShapes[0] || [1, 224, 224, 3];
+    const details: string[] = []; // Added to store simulation details
+
+    details.push('Initializing model simulation...');
+    details.push(`Analyzing ${nodes.length} layers for performance characteristics`);
 
     // Simulate forward pass
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       const nextNode = nodes[i + 1];
-      
-      const result = this.simulateLayer(node, currentShape);
+      details.push(`Simulating layer ${node.id}: ${node.name}`);
+
+      const result = this.simulateLayer(node, currentShape, details);
       layerResults.push(result);
       currentShape = result.outputShape;
 
@@ -70,20 +80,32 @@ export class ModelSimulator {
     // Generate optimization tips
     const optimizationTips = this.generateOptimizationTips(nodes, layerResults);
 
+    // Placeholder for metrics -  Needs further definition based on the animation requirements.
+    const metrics = [{name: "Total FLOPS", value: performance.totalFlops}, {name: "Total Memory", value: performance.totalMemory}];
+
+
     return {
       layerResults,
       performance,
       warnings,
-      optimizationTips
+      optimizationTips,
+      metrics,
+      details
     };
   }
 
-  private simulateLayer(node: ModelNode, inputShape: number[]): LayerSimResult {
+  private simulateLayer(node: ModelNode, inputShape: number[], details: string[]): LayerSimResult {
     // Simulate layer computation and shape transformation
+    details.push(`  Input shape: ${inputShape}`);
     const outputShape = this.calculateOutputShape(node, inputShape);
     const flops = this.calculateLayerFlops(node, inputShape);
     const memoryUsage = this.calculateMemoryUsage(node, inputShape, outputShape);
     const inferenceTime = this.estimateInferenceTime(flops);
+    details.push(`  Output shape: ${outputShape}`);
+    details.push(`  FLOPS: ${flops}`);
+    details.push(`  Memory Usage: ${memoryUsage}`);
+    details.push(`  Inference Time: ${inferenceTime}`);
+
 
     return {
       layerId: node.id,
@@ -161,7 +183,7 @@ export class ModelSimulator {
   private calculatePerformanceMetrics(results: LayerSimResult[]): PerformanceMetrics {
     const totalFlops = results.reduce((sum, r) => sum + r.flops, 0);
     const totalMemory = results.reduce((sum, r) => sum + r.memoryUsage, 0);
-    
+
     return {
       totalFlops,
       totalMemory,
@@ -195,4 +217,4 @@ export class ModelSimulator {
 
     return tips;
   }
-} 
+}
