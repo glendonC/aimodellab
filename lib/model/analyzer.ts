@@ -1,6 +1,6 @@
 "use client";
 
-import { getModelInfo, getModelArchitecture } from '@/lib/huggingface';
+import { getModelArchitecture } from '@/lib/huggingface';
 import { ModelGraph, AnalysisProgress, AnalysisResult } from './types';
 
 export class ModelAnalyzer {
@@ -16,15 +16,7 @@ export class ModelAnalyzer {
         message: 'Loading model information...'
       });
 
-      const modelInfo = await getModelInfo(modelId);
-
-      // Parsing stage
-      onProgress({
-        stage: 'parsing',
-        progress: 50,
-        message: 'Analyzing model architecture...'
-      });
-
+      // Skip API call and use local architecture directly
       const architecture = await getModelArchitecture(modelId);
 
       // Analysis stage
@@ -54,7 +46,7 @@ export class ModelAnalyzer {
           tensorShape: [1, 1000]
         })),
         metadata: {
-          framework: modelInfo.architecture || 'pytorch',
+          framework: 'pytorch',
           version: '2.0',
           totalParams: architecture.nodes.reduce((sum, node) => sum + node.params, 0),
           totalFlops: architecture.nodes.reduce((sum, node) => sum + node.flops, 0),
@@ -76,11 +68,8 @@ export class ModelAnalyzer {
       };
 
     } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'An unexpected error occurred while analyzing the model';
-      console.error('Model analysis failed:', errorMessage);
-      throw new Error(errorMessage);
+      console.error('Model analysis failed:', error);
+      throw error;
     }
   }
 

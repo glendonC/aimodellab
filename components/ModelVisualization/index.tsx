@@ -7,6 +7,7 @@ import { VisualizationHeader } from './VisualizationHeader';
 import { VisualizationOverlay } from './VisualizationOverlay';
 import { VisualizationCanvas } from './VisualizationCanvas';
 import { useModelAnimation } from '@/hooks/useModelAnimation';
+import * as THREE from 'three';
 
 type ModelVisualizationProps = {
   modelFile: any;

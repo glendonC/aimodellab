@@ -19,6 +19,10 @@ import { ResidualBlock } from './layers/ResidualBlock';
 import { NormalizationBlock } from './layers/NormalizationBlock';
 import { AttentionBlock } from './layers/AttentionBlock';
 import { AnalysisResult } from '@/lib/model/types';
+import { EmbeddingBlock } from './layers/EmbeddingBlock';
+import { PoolingBlock } from './layers/PoolingBlock';
+import { DropoutBlock } from './layers/DropoutBlock';
+import { FlattenBlock } from './layers/FlattenBlock';
 
 type SceneProps = {
   highlightedSection: LayerType | null;
@@ -39,7 +43,7 @@ export function Scene({
 }: SceneProps) {
   const { camera } = useThree();
   const [focusedLayer, setFocusedLayer] = useState<LayerType | null>(null);
-  const initialCameraPosition = useMemo(() => new THREE.Vector3(0, 2, 20), []);
+  const initialCameraPosition = useMemo(() => new THREE.Vector3(0, 2, 50), []);
   const cameraTarget = useRef(new THREE.Vector3(0, 0, 0));
   const transitionStartTime = useRef<number | null>(null);
   const transitionDuration = 1000; // 1 second transition
@@ -66,8 +70,15 @@ export function Scene({
     graph: GraphBlock,
     residual: ResidualBlock,
     normalization: NormalizationBlock,
-    attention: AttentionBlock
-  };
+    attention: AttentionBlock,
+    embedding: EmbeddingBlock,
+    pooling: PoolingBlock,
+    dropout: DropoutBlock,
+    flatten: FlattenBlock
+  } as const;
+
+  // Update the type to match the components
+  type LayerType = keyof typeof Components;
 
   const handleLayerClick = (type: LayerType) => {
     if (focusedLayer === type) {
@@ -132,7 +143,11 @@ export function Scene({
 
   return (
     <>
-      <PerspectiveCamera makeDefault position={[0, 2, 20]} fov={60} />
+      <PerspectiveCamera 
+        makeDefault 
+        position={[0, 2, 50]}
+        fov={35}
+      />
       <ambientLight intensity={powerMode ? 1 : 0.5} />
       <pointLight position={[10, 10, 10]} intensity={powerMode ? 3 : 1} />
       
@@ -197,8 +212,8 @@ export function Scene({
         enablePan={!focusedLayer}
         autoRotate={!focusedLayer && autoRotate}
         autoRotateSpeed={powerMode ? 1 : 0}
-        maxDistance={30}
-        minDistance={5}
+        maxDistance={80}
+        minDistance={10}
         dampingFactor={0.05}
         rotateSpeed={0.5}
         enabled={!focusedLayer && !transitionStartTime.current}
@@ -208,7 +223,6 @@ export function Scene({
 }
 
 function generateLayout(analysisResult: AnalysisResult | null | undefined) {
-  // Default circular layout
   const radius = 8;
   const defaultLayout = [
     { id: 'input', type: 'input' as LayerType, position: [-radius * 1.5, radius * 0.5, 0] },
@@ -227,40 +241,56 @@ function generateLayout(analysisResult: AnalysisResult | null | undefined) {
     return defaultLayout;
   }
 
-  // Create a map of node depths (distance from input)
   const depths = new Map<string, number>();
+  const depthGroups = new Map<number, string[]>();
   const visited = new Set<string>();
   
   function calculateDepth(nodeId: string, depth: number = 0) {
     if (visited.has(nodeId)) return;
     visited.add(nodeId);
     
-    depths.set(nodeId, Math.max(depth, depths.get(nodeId) || 0));
+    depths.set(nodeId, depth);
+    if (!depthGroups.has(depth)) {
+      depthGroups.set(depth, []);
+    }
+    depthGroups.get(depth)?.push(nodeId);
     
     analysisResult.graph.edges
       .filter(e => e.from === nodeId)
-      .forEach(edge => {
-        calculateDepth(edge.to, depth + 1);
-      });
+      .forEach(edge => calculateDepth(edge.to, depth + 1));
   }
   
   analysisResult.graph.nodes
     .filter(n => n.type === 'input')
     .forEach(n => calculateDepth(n.id));
-  
+
   const maxDepth = Math.max(...Array.from(depths.values()));
   
+  // Adjust radius based on number of nodes
+  const totalNodes = analysisResult.graph.nodes.length;
+  const adjustedRadius = radius * (1 + Math.log10(totalNodes / 10 + 1));
+
   return analysisResult.graph.nodes.map(node => {
     const depth = depths.get(node.id) || 0;
-    const angle = (depth / maxDepth) * Math.PI - Math.PI / 2;
+    const depthNodes = depthGroups.get(depth) || [];
+    const nodeIndex = depthNodes.indexOf(node.id);
+    const nodesInLayer = depthNodes.length;
+    
+    // Spread nodes more when there are many in a layer
+    const spreadFactor = Math.max(1, Math.log2(nodesInLayer + 1));
+    
+    // Calculate angles with wider spread for layers with many nodes
+    const baseAngle = (depth / maxDepth) * Math.PI * 1.5 - Math.PI * 0.75;
+    const angleOffset = ((nodeIndex - (nodesInLayer - 1) / 2) * spreadFactor) * (Math.PI / 12);
+    const angle = baseAngle + angleOffset;
     
     return {
       id: node.id,
       type: node.type as LayerType,
       position: [
-        radius * Math.cos(angle),
-        radius * Math.sin(angle),
-        0
+        adjustedRadius * Math.cos(angle),
+        adjustedRadius * Math.sin(angle),
+        adjustedRadius * 0.3 * Math.sin(angleOffset) // Increased Z-spread
       ]
     };
   });
