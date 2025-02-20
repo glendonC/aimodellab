@@ -21,16 +21,35 @@ type PerformanceChartProps = {
   powerMode: boolean;
 };
 
+// Add model-specific noise patterns
+const getModelNoisePattern = (modelId: string, time: number) => {
+  const id = modelId.toLowerCase();
+  const baseNoise = Math.sin(time * 0.5) * 0.1;
+  
+  if (id.includes('yolo')) {
+    // YOLO has more stable performance with occasional spikes
+    return baseNoise * 0.5 + (Math.random() > 0.9 ? 0.2 : 0);
+  } else if (id.includes('stable')) {
+    // Stable Diffusion has cyclical patterns
+    return baseNoise * 1.5 + Math.sin(time * 0.8) * 0.15;
+  } else if (id.includes('llama') || id.includes('gpt')) {
+    // Language models have varying load based on sequence length
+    return baseNoise + Math.sin(time * 0.3) * 0.2;
+  }
+  // Default pattern for ResNet etc
+  return baseNoise;
+};
+
 export function PerformanceChart({
   cpuMetrics,
   gpuMetrics,
-  powerMode
-}: PerformanceChartProps) {
+  powerMode,
+  modelId
+}: PerformanceChartProps & { modelId: string }) {
   const data = useMemo(() => {
-    // Generate sample data points over time
     return Array.from({ length: 20 }, (_, i) => {
       const time = i * 0.5;
-      const noise = Math.sin(i * 0.5) * 0.1;
+      const noise = getModelNoisePattern(modelId, time);
       
       return {
         time: time.toFixed(1),
@@ -42,7 +61,7 @@ export function PerformanceChart({
         gpuUtilization: gpuMetrics.utilization * (1 + noise * 0.5)
       };
     });
-  }, [cpuMetrics, gpuMetrics]);
+  }, [cpuMetrics, gpuMetrics, modelId]);
 
   const axisStyle = {
     stroke: powerMode ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
@@ -51,7 +70,7 @@ export function PerformanceChart({
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 25 }}>
+      <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 45 }}>
         <CartesianGrid 
           strokeDasharray="3 3" 
           stroke={powerMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} 
@@ -92,7 +111,25 @@ export function PerformanceChart({
         />
         <Legend 
           wrapperStyle={{
-            color: powerMode ? "white" : "black"
+            color: powerMode ? "white" : "black",
+            paddingTop: "20px"
+          }}
+          layout="horizontal"
+          verticalAlign="bottom"
+          align="center"
+          formatter={(value) => {
+            // Group metrics by device and type
+            const [device, metric] = value.split(" ");
+            return (
+              <span className="text-xs">
+                {device === "CPU" ? "CPU " : "GPU "}
+                {metric}
+              </span>
+            );
+          }}
+          itemStyle={{ 
+            padding: "0 10px",
+            marginRight: 10
           }}
         />
         

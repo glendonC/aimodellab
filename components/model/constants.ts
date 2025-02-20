@@ -204,3 +204,73 @@ export const LAYER_EXPLANATIONS = {
     ]
   }
 };
+
+// Add NVIDIA benchmark data
+export const NVIDIA_BENCHMARKS = {
+  resnet50: {
+    a100: {
+      batchSize1: {
+        fps: 615,
+        latency: 1.6,    // ms
+        memory: 98,      // MB
+        powerDraw: 250   // Watts
+      },
+      batchSize32: {
+        fps: 2480,
+        latency: 12.9,
+        memory: 1205,
+        powerDraw: 315
+      }
+    }
+  },
+  yolov8: {
+    a100: {
+      batchSize1: {
+        fps: 400,
+        latency: 2.5,
+        memory: 145,
+        powerDraw: 285
+      }
+    }
+  },
+  'stable-diffusion': {
+    a100: {
+      batchSize1: {
+        fps: 12,
+        latency: 83.3,
+        memory: 3800,
+        powerDraw: 330
+      }
+    }
+  },
+  llama2: {
+    a100: {
+      batchSize1: {
+        fps: 30,
+        latency: 33.3,
+        memory: 2800,
+        powerDraw: 310
+      }
+    }
+  }
+} as const;
+
+// Add CPU benchmark data for comparison
+export const CPU_BENCHMARKS = {
+  'xeon-8380': {  // Intel Xeon Platinum 8380
+    resnet50: {
+      batchSize1: {
+        fps: 52,
+        latency: 19.2,
+        memory: 147
+      }
+    },
+    yolov8: {
+      batchSize1: {
+        fps: 35,
+        latency: 28.6,
+        memory: 218
+      }
+    }
+  }
+} as const;
