@@ -83,7 +83,7 @@ export function ComponentLibrary({ powerMode, onAddNode, onSelectTemplate }: Com
     <div className="h-full flex flex-col">
       {/* Tabs */}
       <div className={cn(
-        "p-4 border-b flex gap-2",
+        "p-4 border-b flex gap-2 sticky top-0 z-10 bg-inherit",
         powerMode ? "border-white/10" : "border-gray-100"
       )}>
         <button
@@ -121,10 +121,12 @@ export function ComponentLibrary({ powerMode, onAddNode, onSelectTemplate }: Com
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {activeTab === 'templates' ? (
-          <ModelTemplates
-            powerMode={powerMode}
-            onSelectTemplate={handleSelectTemplate}
-          />
+          <div className="p-4">
+            <ModelTemplates
+              powerMode={powerMode}
+              onSelectTemplate={handleSelectTemplate}
+            />
+          </div>
         ) : (
           <div className="p-4">
             {Object.entries(groupedComponents).map(([category, components]) => (

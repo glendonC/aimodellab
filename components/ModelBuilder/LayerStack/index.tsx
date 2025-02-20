@@ -9,9 +9,10 @@ type LayerStackProps = {
   nodes: ModelNode[];
   onNodesChange: (nodes: ModelNode[]) => void;
   powerMode: boolean;
+  isSimulating?: boolean;
 };
 
-export function LayerStack({ nodes, onNodesChange, powerMode }: LayerStackProps) {
+export function LayerStack({ nodes, onNodesChange, powerMode, isSimulating }: LayerStackProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const handleRemoveNode = (nodeId: string) => {
@@ -40,7 +41,7 @@ export function LayerStack({ nodes, onNodesChange, powerMode }: LayerStackProps)
       </div>
 
       {/* Layer List with increased top padding */}
-      <div className="flex-1 px-4 pb-4">
+      <div className="flex-1 px-4 pb-4 overflow-y-auto">
         <div className="pt-12">
           <LayerList
             nodes={nodes}
@@ -49,6 +50,7 @@ export function LayerStack({ nodes, onNodesChange, powerMode }: LayerStackProps)
             onNodesChange={onNodesChange}
             onRemoveNode={handleRemoveNode}
             powerMode={powerMode}
+            isSimulating={isSimulating}
           />
         </div>
       </div>

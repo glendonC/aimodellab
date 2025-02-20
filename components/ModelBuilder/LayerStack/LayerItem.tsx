@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LAYER_COLORS } from '../../model/constants';
 import { ModelNode } from '@/lib/model/types';
+import { motion } from 'framer-motion';
 
 type LayerItemProps = {
   node: ModelNode;
@@ -15,6 +16,8 @@ type LayerItemProps = {
   onClick: () => void;
   onRemove: () => void;
   powerMode: boolean;
+  isSimulating?: boolean;
+  simulationDelay?: number;
 };
 
 export function LayerItem({
@@ -25,7 +28,9 @@ export function LayerItem({
   onDragEnd,
   onClick,
   onRemove,
-  powerMode
+  powerMode,
+  isSimulating,
+  simulationDelay
 }: LayerItemProps) {
   return (
     <Reorder.Item
@@ -83,6 +88,23 @@ export function LayerItem({
           <X className="w-4 h-4" />
         </button>
       </div>
+
+      {isSimulating && (
+        <motion.div
+          className={cn(
+            "absolute inset-0",
+            powerMode ? "bg-cyan-500/20" : "bg-blue-500/20"
+          )}
+          initial={{ x: '-100%' }}
+          animate={{ x: '100%' }}
+          transition={{
+            duration: 0.8,
+            delay: simulationDelay,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+      )}
     </Reorder.Item>
   );
 }

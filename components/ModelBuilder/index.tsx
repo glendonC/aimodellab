@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Code } from 'lucide-react';
+import { Play, Code, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ComponentLibrary } from './ComponentLibrary';
 import { LayerStack } from './LayerStack/index';
 import { NvidiaInsightsPanel } from './NvidiaInsightsPanel';
 import { CodeExportPanel } from './CodeExportPanel';
 import { ModelNode } from '@/lib/model/types';
+import { ModelSimulator } from '@/lib/model/simulator';
+import { SimulationResult } from '@/lib/model/types';
 
 type ModelBuilderProps = {
   powerMode: boolean;
@@ -18,6 +20,9 @@ export default function ModelBuilder({ powerMode }: ModelBuilderProps) {
   const [selectedNode, setSelectedNode] = useState<ModelNode | null>(null);
   const [nodes, setNodes] = useState<ModelNode[]>([]);
   const [isExportPanelOpen, setIsExportPanelOpen] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationResults, setSimulationResults] = useState<SimulationResult | null>(null);
+  const simulator = new ModelSimulator();
 
   const handleAddNode = (node: ModelNode) => {
     setNodes(prev => [...prev, node]);
@@ -26,6 +31,18 @@ export default function ModelBuilder({ powerMode }: ModelBuilderProps) {
   const handleTemplateSelect = (templateNodes: ModelNode[]) => {
     setNodes(templateNodes);
     setSelectedNode(null);
+  };
+
+  const handleRunSimulation = async () => {
+    setIsSimulating(true);
+    try {
+      const result = await simulator.runSimulation(nodes);
+      setSimulationResults(result);
+    } catch (error) {
+      console.error('Simulation failed:', error);
+    } finally {
+      setIsSimulating(false);
+    }
   };
 
   return (
@@ -56,16 +73,23 @@ export default function ModelBuilder({ powerMode }: ModelBuilderProps) {
           powerMode ? "bg-black/40 border border-white/10" : "bg-gray-100"
         )}>
           <motion.button
+            onClick={handleRunSimulation}
+            disabled={isSimulating}
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors",
               powerMode
                 ? "bg-cyan-500 text-white hover:bg-cyan-600"
-                : "bg-black text-white hover:bg-gray-800"
+                : "bg-black text-white hover:bg-gray-800",
+              isSimulating && "opacity-50 cursor-not-allowed"
             )}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <Play className="w-4 h-4" />
+            {isSimulating ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
             Run Simulation
           </motion.button>
           <motion.button
@@ -88,6 +112,7 @@ export default function ModelBuilder({ powerMode }: ModelBuilderProps) {
           nodes={nodes}
           onNodesChange={setNodes}
           powerMode={powerMode}
+          isSimulating={isSimulating}
         />
 
         {/* Code Export Panel */}
@@ -107,6 +132,8 @@ export default function ModelBuilder({ powerMode }: ModelBuilderProps) {
         <NvidiaInsightsPanel
           powerMode={powerMode}
           nodes={nodes}
+          simulationResults={simulationResults}
+          isSimulating={isSimulating}
         />
       </div>
     </div>

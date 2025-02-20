@@ -13,6 +13,7 @@ type LayerListProps = {
   onNodesChange: (nodes: ModelNode[]) => void;
   onRemoveNode: (nodeId: string) => void;
   powerMode: boolean;
+  isSimulating?: boolean;
 };
 
 export function LayerList({
@@ -21,7 +22,8 @@ export function LayerList({
   onNodeSelect,
   onNodesChange,
   onRemoveNode,
-  powerMode
+  powerMode,
+  isSimulating
 }: LayerListProps) {
   const [isDragging, setIsDragging] = useState(false);
 
@@ -44,7 +46,7 @@ export function LayerList({
       className="flex-1 space-y-2"
     >
       <AnimatePresence>
-        {nodes.map((node) => (
+        {nodes.map((node, index) => (
           <LayerItem
             key={node.id}
             node={node}
@@ -55,6 +57,8 @@ export function LayerList({
             onClick={() => onNodeSelect(node.id)}
             onRemove={() => onRemoveNode(node.id)}
             powerMode={powerMode}
+            isSimulating={isSimulating}
+            simulationDelay={index * 0.2}
           />
         ))}
       </AnimatePresence>
