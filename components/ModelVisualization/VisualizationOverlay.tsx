@@ -6,17 +6,22 @@ import { cn } from '@/lib/utils';
 import { LayerStats } from '../model/LayerStats';
 import { AIExplanation } from '../model/AIExplanation';
 import { LayerType } from '../model/types';
+import { AnalysisResult } from '@/lib/model/types';
 
 type VisualizationOverlayProps = {
   highlightedSection: LayerType | null;
   powerMode: boolean;
   isLoading?: boolean;
+  currentModel: 'resnet' | 'yolov8' | 'stable-diffusion' | 'llama2' | 'gpt2' | 'transformer';
+  analysisResult?: AnalysisResult | null;
 };
 
 export function VisualizationOverlay({
   highlightedSection,
   powerMode,
-  isLoading
+  isLoading,
+  currentModel,
+  analysisResult  // Add this
 }: VisualizationOverlayProps) {
   return (
     <>
@@ -27,6 +32,8 @@ export function VisualizationOverlay({
               type={highlightedSection}
               powerMode={powerMode}
               isHighlighted={true}
+              currentModel={currentModel}
+              modelId={analysisResult?.graph?.metadata?.modelId}
             />
             <AIExplanation
               type={highlightedSection}

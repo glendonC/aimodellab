@@ -1,6 +1,3 @@
-"use client";
-
-// Layer color definitions
 export const LAYER_COLORS = {
   input: '#60a5fa',
   cnn: '#3b82f6',
@@ -18,79 +15,95 @@ export const LAYER_COLORS = {
   flatten: '#14b8a6'
 };
 
-// Layer statistics
 export const LAYER_STATS = {
+  // Model-specific stats
+  resnet: {
+    residual: {
+      neurons: 16384,
+      inferenceTime: 0.8,
+      memoryUsage: 3.0,
+      type: 'ResBlock',
+      activations: 'ReLU',
+      connections: 'Skip Connection'
+    },
+    cnn: {
+      neurons: 9408,
+      inferenceTime: 1.2,
+      memoryUsage: 2.0,
+      filters: '64→128→256',
+      activations: 'ReLU'
+    }
+  },
+
+  yolov8: {
+    residual: {
+      neurons: 32768,
+      inferenceTime: 1.2,
+      memoryUsage: 3.6,
+      type: 'CSPBlock',
+      activations: 'SiLU',
+      connections: 'Cross-Stage Connection'
+    },
+    cnn: {
+      neurons: 32768,
+      inferenceTime: 1.8,
+      memoryUsage: 2.0,
+      filters: '128→256→512',
+      activations: 'SiLU'
+    }
+  },
+
+  'stable-diffusion': {
+    residual: {
+      neurons: 24576,
+      inferenceTime: 1.5,
+      memoryUsage: 4.0,
+      type: 'UNet Block',
+      activations: 'SiLU',
+      connections: 'Time Embedding'
+    }
+  },
+
+  llama2: {
+    attention: {
+      neurons: 49152,
+      inferenceTime: 2.0,
+      memoryUsage: 6.0,
+      heads: 32,
+      activations: 'RoPE'
+    }
+  },
+
+  // Generic layer stats (fallback)
   input: {
-    neurons: 150528, // 224 * 224 * 3
-    inferenceTime: 0.5,
-    memoryUsage: 1.8,
-    activations: 'None',
-  },
-  cnn: {
-    neurons: 65536,
-    inferenceTime: 2.1,
-    memoryUsage: 4.2,
-    filters: '64→128→256',
-    activations: 'ReLU',
-  },
-  transformer: {
-    neurons: 32768,
-    inferenceTime: 3.5,
-    memoryUsage: 8.6,
-    heads: 6,
-    activations: 'GELU',
-  },
-  rnn: {
-    neurons: 16384,
-    inferenceTime: 2.8,
-    memoryUsage: 6.4,
-    hiddenUnits: 256,
-    activations: 'Tanh',
+    neurons: 150528,
+    inferenceTime: 0.1,
+    memoryUsage: 0.6,
+    activations: 'None'
   },
   output: {
     neurons: 1000,
-    inferenceTime: 0.3,
-    memoryUsage: 0.8,
-    activations: 'Softmax',
+    inferenceTime: 0.2,
+    memoryUsage: 0.4,
+    activations: 'Softmax'
   },
-  mlp: {
-    neurons: 4096,
-    inferenceTime: 1.2,
-    memoryUsage: 2.4,
-    activations: 'ReLU',
-    layers: '4096→2048→1024'
-  },
-  graph: {
-    neurons: 2048,
-    inferenceTime: 2.5,
-    memoryUsage: 3.6,
-    activations: 'ReLU',
-    aggregation: 'Mean'
+  rnn: {
+    neurons: 8192,
+    inferenceTime: 2.0,
+    memoryUsage: 3.2,
+    hiddenUnits: 512,
+    activations: 'Tanh'
   },
   residual: {
-    neurons: 8192,
-    inferenceTime: 1.8,
-    memoryUsage: 3.2,
+    neurons: 16384,
+    inferenceTime: 0.8,
+    memoryUsage: 3.0,
+    type: 'ResBlock',
     activations: 'ReLU',
-    connections: 'Skip'
-  },
-  normalization: {
-    neurons: 1024,
-    inferenceTime: 0.4,
-    memoryUsage: 1.2,
-    type: 'BatchNorm',
-    momentum: 0.99
-  },
-  attention: {
-    neurons: 4096,
-    inferenceTime: 2.2,
-    memoryUsage: 5.6,
-    heads: 4,
-    activations: 'Softmax'
+    connections: 'Skip Connection'
   }
 };
 
-// Layer explanations
 export const LAYER_EXPLANATIONS = {
   input: {
     title: "Input Layer",

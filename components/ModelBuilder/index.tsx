@@ -10,6 +10,7 @@ import { NvidiaInsightsPanel } from './NvidiaInsightsPanel';
 import { CodeExportPanel } from './CodeExportPanel';
 import { ModelNode } from '@/lib/model/types';
 import { ModelSimulator, SimulationResult } from '@/lib/model/simulator';
+import { VisualizationOverlay } from '@/components/ModelVisualization/VisualizationOverlay';
 
 type ModelBuilderProps = {
   powerMode: boolean;
@@ -21,6 +22,7 @@ export default function ModelBuilder({ powerMode }: ModelBuilderProps) {
   const [isExportPanelOpen, setIsExportPanelOpen] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResults, setSimulationResults] = useState<SimulationResult | null>(null);
+  const [currentModel, setCurrentModel] = useState<'resnet' | 'yolov8' | 'stable-diffusion' | 'llama2' | 'gpt2' | 'transformer'>('resnet');
   const simulator = new ModelSimulator();
 
   const handleAddNode = (node: ModelNode) => {
@@ -135,6 +137,12 @@ export default function ModelBuilder({ powerMode }: ModelBuilderProps) {
           isSimulating={isSimulating}
         />
       </div>
+
+      <VisualizationOverlay
+        currentModel={currentModel}
+        highlightedSection={selectedNode?.type || null}
+        powerMode={powerMode}
+      />
     </div>
   );
 }

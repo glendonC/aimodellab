@@ -31,7 +31,7 @@ export class ModelAnalyzer {
           id: node.id,
           type: node.type as any,
           name: node.name,
-          opType: node.type,
+          opType: modelId,
           params: node.params,
           flops: node.flops,
           memoryUsage: node.memoryUsage,

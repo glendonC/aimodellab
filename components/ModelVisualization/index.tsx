@@ -49,6 +49,7 @@ export default function ModelVisualization({
         highlightedSection={highlightedSection}
         powerMode={powerMode}
         isLoading={isLoading}
+        analysisResult={analysisResult}
       />
 
       <VisualizationCanvas
