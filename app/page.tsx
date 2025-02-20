@@ -5,7 +5,7 @@ import { Search, Zap, Menu, ArrowLeftRight, Activity, Box, LayoutGrid, Sparkles 
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import ModelPresets from '@/components/ModelPresets';
-import ModelVisualization from '@/components/ModelVisualization';
+import ModelVisualization from '@/components/ModelVisualization/index';
 import ModelSearch from '@/components/ModelSearch';
 import ModelComparison from '@/components/ModelComparison';
 import PerformanceModal from '@/components/PerformanceModal';

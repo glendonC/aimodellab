@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { AnalysisResult } from '@/lib/model/types';
+import { AnalysisResult, LayerType } from '@/lib/model/types';
 import { VisualizationHeader } from './VisualizationHeader';
 import { VisualizationOverlay } from './VisualizationOverlay';
 import { VisualizationCanvas } from './VisualizationCanvas';
@@ -11,7 +11,7 @@ import { useModelAnimation } from '@/hooks/useModelAnimation';
 type ModelVisualizationProps = {
   modelFile: any;
   powerMode: boolean;
-  analysisResult?: AnalysisResult;
+  analysisResult?: AnalysisResult | null;
   isLoading?: boolean;
 };
 
@@ -23,7 +23,7 @@ export default function ModelVisualization({
 }: ModelVisualizationProps) {
   const [highlightedSection, setHighlightedSection] = useState<LayerType | null>(null);
   const [autoRotate, setAutoRotate] = useState(true);
-  const controlsRef = useRef();
+  const controlsRef = useRef<THREE.OrbitControls | null>(null);
   
   const {
     isAnimating,

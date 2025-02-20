@@ -3,14 +3,13 @@
 import { Canvas } from '@react-three/fiber';
 import { cn } from '@/lib/utils';
 import { Scene } from '../model/Scene';
-import { LayerType } from '../model/types';
-import { AnalysisResult } from '@/lib/model/types';
+import { LayerType, AnalysisResult, ModelGraph } from '@/lib/model/types';
 
 type VisualizationCanvasProps = {
   powerMode: boolean;
   controlsRef: React.RefObject<any>;
   autoRotate: boolean;
-  analysisResult?: AnalysisResult | null;
+  analysisResult?: AnalysisResult | ModelGraph | null;
   highlightedSection: LayerType | null;
   setHighlightedSection: (section: LayerType | null) => void;
   currentLayerIndex: number;

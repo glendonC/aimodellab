@@ -7,7 +7,7 @@ import { AnalysisResult } from '@/lib/model/types';
 
 type VisualizationHeaderProps = {
   powerMode: boolean;
-  controlsRef: React.RefObject<any>;
+  controlsRef: React.RefObject<THREE.OrbitControls | null>;
   analysisResult?: AnalysisResult;
   isAnimating: boolean;
   startAnimation: () => void;
