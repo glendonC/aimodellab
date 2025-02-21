@@ -13,7 +13,14 @@ type AIExplanationProps = {
 };
 
 export function AIExplanation({ type, powerMode }: AIExplanationProps) {
-  const explanation = LAYER_EXPLANATIONS[type];
+  // Add fallback explanation
+  const defaultExplanation = {
+    title: 'Neural Network Layer',
+    description: 'This is a processing unit in the neural network.',
+    technical: ['Processes input data', 'Applies transformations', 'Passes results to next layer']
+  };
+
+  const explanation = LAYER_EXPLANATIONS[type] || defaultExplanation;
   
   return (
     <motion.div
