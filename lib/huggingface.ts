@@ -66,20 +66,8 @@ export const FEATURED_MODELS: HFModel[] = [
     likes: 2800,
     tags: ['object-detection', 'real-time', 'tensorrt']
   },
-  
+   
   // Large Language Models
-  {
-    id: 'meta-llama/llama-2-7b',
-    name: 'Llama 2 (7B)',
-    description: 'Efficient large language model with multi-GPU scaling',
-    type: 'text',
-    task: 'text-generation',
-    architecture: 'Transformer',
-    size: '13.5 GB',
-    downloads: 8500000,
-    likes: 4500,
-    tags: ['llm', 'multi-gpu', 'fp16-optimized']
-  },
   {
     id: 'openai/gpt-2',
     name: 'GPT-2 Small',
@@ -142,18 +130,6 @@ export const FEATURED_MODELS: HFModel[] = [
     likes: 720,
     tags: ['healthcare', 'nlp', 'cuda']
   },
-  {
-    id: 'facebook/dinov2-base',
-    name: 'DINOv2',
-    description: 'Self-supervised vision model with NVIDIA acceleration',
-    type: 'vision',
-    task: 'self-supervised-learning',
-    architecture: 'Transformer',
-    size: '384 MB',
-    downloads: 1200000,
-    likes: 890,
-    tags: ['self-supervised', 'vision', 'cuda']
-  }
 ];
 
 export async function searchModels(query: string): Promise<HFModel[]> {
