@@ -458,15 +458,15 @@ type ModelTemplatesProps = {
 
 export function ModelTemplates({ powerMode, onSelectTemplate }: ModelTemplatesProps) {
   return (
-    <div className="p-4">
+    <div className="p-6">
       <h3 className={cn(
-        "text-sm font-medium mb-3",
+        "text-lg font-semibold mb-4",
         powerMode ? "text-white/70" : "text-gray-600"
       )}>
         Model Templates
       </h3>
 
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-4">
         {MODEL_TEMPLATES.map((template) => {
           const Icon = template.icon;
           
@@ -475,7 +475,7 @@ export function ModelTemplates({ powerMode, onSelectTemplate }: ModelTemplatesPr
               key={template.id}
               onClick={() => onSelectTemplate(template.nodes)}
               className={cn(
-                "p-4 rounded-lg text-left transition-colors relative group",
+                "p-6 rounded-lg text-left transition-colors relative group",
                 powerMode
                   ? "bg-black/40 hover:bg-black/60 border border-white/10"
                   : "bg-gray-100 hover:bg-gray-200 border border-transparent",
@@ -483,34 +483,39 @@ export function ModelTemplates({ powerMode, onSelectTemplate }: ModelTemplatesPr
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <Icon className={cn(
-                  "w-5 h-5",
-                  powerMode ? "text-cyan-400" : "text-blue-500"
-                )} />
-                <h4 className={cn(
-                  "font-medium",
-                  powerMode ? "text-white" : "text-black"
+              {/* Header with name and badge */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex gap-3 flex-1">
+                  <Icon className={cn(
+                    "w-6 h-6 shrink-0 mt-1",
+                    powerMode ? "text-cyan-400" : "text-blue-500"
+                  )} />
+                  <h4 className={cn(
+                    "text-lg font-medium leading-tight",
+                    powerMode ? "text-white" : "text-black"
+                  )}>
+                    {template.name}
+                  </h4>
+                </div>
+                
+                {/* Layer count badge */}
+                <div className={cn(
+                  "px-3 py-1.5 rounded-full text-xs whitespace-nowrap ml-3 shrink-0 mt-1",
+                  powerMode
+                    ? "bg-cyan-500/20 text-cyan-400"
+                    : "bg-blue-100 text-blue-600"
                 )}>
-                  {template.name}
-                </h4>
+                  {template.nodes.length} layers
+                </div>
               </div>
+
+              {/* Description */}
               <p className={cn(
-                "text-sm",
+                "text-sm leading-relaxed mt-2",
                 powerMode ? "text-white/70" : "text-gray-600"
               )}>
                 {template.description}
               </p>
-
-              {/* Layer count badge */}
-              <div className={cn(
-                "absolute top-3 right-3 px-2 py-1 rounded-full text-xs max-w-[60px] truncate",
-                powerMode
-                  ? "bg-cyan-500/20 text-cyan-400"
-                  : "bg-blue-100 text-blue-600"
-              )}>
-                {template.nodes.length} layers
-              </div>
             </motion.button>
           );
         })}

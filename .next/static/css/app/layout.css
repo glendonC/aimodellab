@@ -830,6 +830,9 @@ video {
 .mt-8 {
   margin-top: 2rem;
 }
+.ml-3 {
+  margin-left: 0.75rem;
+}
 .block {
   display: block;
 }
@@ -1761,6 +1764,12 @@ video {
 }
 .leading-none {
   line-height: 1;
+}
+.leading-relaxed {
+  line-height: 1.625;
+}
+.leading-tight {
+  line-height: 1.25;
 }
 .tracking-tight {
   letter-spacing: -0.025em;
