@@ -49,7 +49,7 @@ export default function PerformanceMetrics({
         Real-time Performance
       </h2>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* CPU Metrics */}
         <div className={cn(
           "rounded-lg p-4",
@@ -102,86 +102,88 @@ export default function PerformanceMetrics({
           />
         </div>
 
-        {/* GPU Metrics */}
-        <div className={cn(
-          "rounded-lg p-4",
-          powerMode ? "bg-black/40 border border-cyan-500/30" : "bg-muted"
-        )}>
-          <div className="flex items-center gap-2 mb-4">
-            <Zap className="w-5 h-5 text-cyan-400" />
-            <h3 className={cn(
-              "font-semibold flex items-center gap-2",
-              powerMode ? "text-white" : "text-foreground"
-            )}>
-              NVIDIA GPU Mode
-              {powerMode && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400">
-                  RAPIDS Optimized
-                </span>
-              )}
-            </h3>
+        {/* GPU Metrics - Only show when powerMode is true */}
+        {powerMode && (
+          <div className={cn(
+            "rounded-lg p-4",
+            "bg-black/40 border border-cyan-500/30"
+          )}>
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="w-5 h-5 text-cyan-400" />
+              <h3 className={cn(
+                "font-semibold flex items-center gap-2",
+                powerMode ? "text-white" : "text-foreground"
+              )}>
+                NVIDIA GPU Mode
+                {powerMode && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400">
+                    RAPIDS Optimized
+                  </span>
+                )}
+              </h3>
+            </div>
+            
+            <MetricBar
+              label="Inference Speed"
+              value={metrics.gpu.fps}
+              maxValue={120}
+              unit="FPS"
+              color="cyan"
+              powerMode={powerMode}
+              showSpeedupBadge
+            />
+            
+            <MetricBar
+              label="Latency"
+              value={metrics.gpu.latency}
+              maxValue={50}
+              unit="ms"
+              color="cyan"
+              powerMode={powerMode}
+              showSpeedupBadge
+            />
+            
+            <MetricBar
+              label="Memory Usage"
+              value={metrics.gpu.memory}
+              maxValue={8}
+              unit="GB"
+              color="cyan"
+              powerMode={powerMode}
+            />
+
+            <MetricBar
+              label="Utilization"
+              value={metrics.gpu.utilization}
+              maxValue={100}
+              unit="%"
+              color="cyan"
+              powerMode={powerMode}
+            />
+
+            {powerMode && (
+              <motion.div 
+                className="mt-4 p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Gauge className="w-4 h-4 text-cyan-400" />
+                  <span className="text-sm font-medium text-cyan-400">
+                    RAPIDS Acceleration Impact
+                  </span>
+                </div>
+                <div className="text-xs text-cyan-300">
+                  • 5x Faster Inference Speed
+                  <br />
+                  • 3x Lower Memory Latency
+                  <br />
+                  • Real-time Neural Processing
+                </div>
+              </motion.div>
+            )}
           </div>
-          
-          <MetricBar
-            label="Inference Speed"
-            value={metrics.gpu.fps}
-            maxValue={120}
-            unit="FPS"
-            color="cyan"
-            powerMode={powerMode}
-            showSpeedupBadge
-          />
-          
-          <MetricBar
-            label="Latency"
-            value={metrics.gpu.latency}
-            maxValue={50}
-            unit="ms"
-            color="cyan"
-            powerMode={powerMode}
-            showSpeedupBadge
-          />
-          
-          <MetricBar
-            label="Memory Usage"
-            value={metrics.gpu.memory}
-            maxValue={8}
-            unit="GB"
-            color="cyan"
-            powerMode={powerMode}
-          />
-
-          <MetricBar
-            label="Utilization"
-            value={metrics.gpu.utilization}
-            maxValue={100}
-            unit="%"
-            color="cyan"
-            powerMode={powerMode}
-          />
-
-          {powerMode && (
-            <motion.div 
-              className="mt-4 p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Gauge className="w-4 h-4 text-cyan-400" />
-                <span className="text-sm font-medium text-cyan-400">
-                  RAPIDS Acceleration Impact
-                </span>
-              </div>
-              <div className="text-xs text-cyan-300">
-                • 5x Faster Inference Speed
-                <br />
-                • 3x Lower Memory Latency
-                <br />
-                • Real-time Neural Processing
-              </div>
-            </motion.div>
-          )}
-        </div>
+        )}
       </div>
     </motion.div>
   );

@@ -2,6 +2,7 @@
 
 import { getModelArchitecture } from '@/lib/huggingface';
 import { ModelGraph, AnalysisProgress, AnalysisResult } from './types';
+import { MODEL_BENCHMARKS } from './constants';
 
 export class ModelAnalyzer {
   async analyzeModel(
@@ -74,21 +75,27 @@ export class ModelAnalyzer {
   }
 
   private analyzePerformance(graph: ModelGraph) {
-    // Calculate realistic performance metrics
-    const totalParams = Math.max(1, graph.metadata.totalParams);
-    const totalFlops = Math.max(1, graph.metadata.totalFlops);
-    const memoryPeak = Math.max(1024 * 1024, graph.metadata.totalMemory);
-
-    // Estimate inference time based on model complexity
-    const inferenceTime = Math.max(1, (totalFlops / 1e9) * 0.5);
+    const modelId = graph.metadata.modelId?.toLowerCase() || '';
+    let benchmarkKey = 'resnet-50'; // default
+  
+    // Map model ID to benchmark key
+    if (modelId.includes('yolo')) benchmarkKey = 'yolov8';
+    if (modelId.includes('stable')) benchmarkKey = 'stable-diffusion';
+    if (modelId.includes('llama')) benchmarkKey = 'llama2';
+    if (modelId.includes('gpt')) benchmarkKey = 'gpt2';
+    if (modelId.includes('bart')) benchmarkKey = 'bart';
+    if (modelId.includes('whisper')) benchmarkKey = 'whisper';
+    if (modelId.includes('vit')) benchmarkKey = 'vit';
+    if (modelId.includes('biobert')) benchmarkKey = 'biobert';
+    if (modelId.includes('dino')) benchmarkKey = 'dinov2';
+  
+    const benchmarks = MODEL_BENCHMARKS[benchmarkKey];
     
-    // Estimate device utilization based on model size
-    const deviceUtilization = Math.min(Math.max(0.1, totalParams / 1e9), 0.95);
-
     return {
-      inferenceTime,
-      memoryPeak,
-      deviceUtilization
+      inferenceTime: benchmarks.cpu.latency,
+      memoryPeak: benchmarks.cpu.memoryUsage * 1024 * 1024 * 1024,
+      deviceUtilization: benchmarks.cpu.utilization / 100,
+      gpuMetrics: benchmarks.gpu
     };
   }
 }

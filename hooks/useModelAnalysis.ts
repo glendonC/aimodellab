@@ -15,10 +15,16 @@ export function useModelAnalysis() {
     setError(null);
     
     try {
+      // Debug to verify we're getting called with different modelIds
+      console.log('Analyzing model:', modelId);
+      
       const analyzer = new ModelAnalyzer();
       const analysisResult = await analyzer.analyzeModel(modelId, (progress) => {
         setProgress(progress);
       });
+      
+      // Debug the analysis result
+      console.log('Analysis result:', analysisResult);
       
       // Add animation states
       const enhancedResult = {
@@ -41,6 +47,7 @@ export function useModelAnalysis() {
       return enhancedResult;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to analyze model';
+      console.error('Analysis failed:', err);
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

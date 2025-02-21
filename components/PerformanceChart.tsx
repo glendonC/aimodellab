@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { Line } from 'recharts';
-import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LegendProps } from 'recharts';
 import { cn } from '@/lib/utils';
 
 type PerformanceChartProps = {
@@ -51,14 +51,26 @@ export function PerformanceChart({
       const time = i * 0.5;
       const noise = getModelNoisePattern(modelId, time);
       
+      // Add model-specific performance patterns
+      const baseLatency = cpuMetrics.latency;
+      const baseMemory = cpuMetrics.memory;
+      const baseUtilization = cpuMetrics.utilization;
+
+      // Add realistic fluctuations
+      const cpuVariation = Math.sin(time * 0.8) * 0.15 + noise;
+
       return {
         time: time.toFixed(1),
-        cpuLatency: cpuMetrics.latency * (1 + noise),
-        gpuLatency: gpuMetrics.latency * (1 + noise * 0.5),
-        cpuMemory: cpuMetrics.memory * (1 + noise),
-        gpuMemory: gpuMetrics.memory * (1 + noise * 0.5),
-        cpuUtilization: cpuMetrics.utilization * (1 + noise),
-        gpuUtilization: gpuMetrics.utilization * (1 + noise * 0.5)
+        // CPU metrics with more variation
+        cpuLatency: baseLatency * (1 + cpuVariation),
+        cpuMemory: baseMemory * (1 + cpuVariation * 0.5),
+        cpuUtilization: Math.min(100, baseUtilization * (1 + cpuVariation)),
+        // Only include GPU metrics if GPU is enabled
+        ...(gpuMetrics && {
+          gpuLatency: gpuMetrics.latency * (1 + noise * 0.5),
+          gpuMemory: gpuMetrics.memory * (1 + noise * 0.3),
+          gpuUtilization: Math.min(100, gpuMetrics.utilization * (1 + noise * 0.4))
+        })
       };
     });
   }, [cpuMetrics, gpuMetrics, modelId]);
@@ -68,73 +80,91 @@ export function PerformanceChart({
     fill: powerMode ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)"
   };
 
+  const tooltipStyle = {
+    contentStyle: {
+      backgroundColor: powerMode ? "rgba(17, 24, 39, 0.9)" : "rgba(255, 255, 255, 0.9)",
+      border: powerMode ? "1px solid rgba(6, 182, 212, 0.3)" : "1px solid rgba(0, 0, 0, 0.1)",
+      borderRadius: "0.5rem",
+      color: powerMode ? "white" : "black"
+    },
+    formatter: (value: number, name: string) => {
+      if (name.includes('Latency')) {
+        return [`${value.toFixed(2)} ms`, name];
+      }
+      if (name.includes('Memory')) {
+        return [`${value.toFixed(2)} GB`, name];
+      }
+      if (name.includes('Utilization')) {
+        return [`${value.toFixed(1)}%`, name];
+      }
+      return [value, name];
+    },
+    labelFormatter: (label: string) => `Time: ${label}s`
+  };
+
+  const legendStyle = {
+    layout: 'horizontal' as const,
+    verticalAlign: 'bottom' as const,
+    align: 'center' as const,
+    formatter: (value: string) => {
+      const [device, metric] = value.split(" ");
+      return (
+        <span className="text-xs">
+          {device === "CPU" ? "CPU " : "GPU "}
+          {metric}
+        </span>
+      );
+    },
+    wrapperStyle: {
+      color: powerMode ? "white" : "black",
+      paddingTop: "20px",
+      padding: "0 10px",
+      marginRight: "10px",
+      display: "flex",
+      justifyContent: "center",
+      gap: "1rem"
+    }
+  } as const;
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 45 }}>
-        <CartesianGrid 
-          strokeDasharray="3 3" 
-          stroke={powerMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} 
-        />
+        <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
         <XAxis 
-          dataKey="time"
-          {...axisStyle}
-          axisLine={{ stroke: axisStyle.stroke }}
-          tickLine={{ stroke: axisStyle.stroke }}
-          tick={{ fill: axisStyle.fill }}
-          label={{ 
-            value: 'Time (s)', 
-            position: 'bottom',
-            fill: axisStyle.fill,
-            offset: 15
-          }}
-        />
-        <YAxis
-          {...axisStyle}
-          axisLine={{ stroke: axisStyle.stroke }}
-          tickLine={{ stroke: axisStyle.stroke }}
-          tick={{ fill: axisStyle.fill }}
-          label={{ 
-            value: 'Performance Metrics', 
-            angle: -90, 
-            position: 'insideLeft',
-            fill: axisStyle.fill,
-            offset: 0
-          }}
-        />
-        <Tooltip 
-          contentStyle={{
-            backgroundColor: powerMode ? "rgba(17, 24, 39, 0.9)" : "rgba(255, 255, 255, 0.9)",
-            border: powerMode ? "1px solid rgba(6, 182, 212, 0.3)" : "1px solid rgba(0, 0, 0, 0.1)",
-            borderRadius: "0.5rem",
-            color: powerMode ? "white" : "black"
-          }}
-        />
-        <Legend 
-          wrapperStyle={{
-            color: powerMode ? "white" : "black",
-            paddingTop: "20px"
-          }}
-          layout="horizontal"
-          verticalAlign="bottom"
-          align="center"
-          formatter={(value) => {
-            // Group metrics by device and type
-            const [device, metric] = value.split(" ");
-            return (
-              <span className="text-xs">
-                {device === "CPU" ? "CPU " : "GPU "}
-                {metric}
-              </span>
-            );
-          }}
-          itemStyle={{ 
-            padding: "0 10px",
-            marginRight: 10
-          }}
+          {...axisStyle} 
+          dataKey="time" 
+          label={{ value: 'Time (s)', position: 'bottom' }} 
         />
         
-        {/* CPU Metrics */}
+        {/* Primary Y-axis for latency */}
+        <YAxis 
+          {...axisStyle}
+          yAxisId="left"
+          label={{ 
+            value: 'Latency (ms)', 
+            angle: -90, 
+            position: 'insideLeft' 
+          }}
+        />
+
+        {/* Secondary Y-axis for memory and utilization */}
+        <YAxis 
+          {...axisStyle}
+          yAxisId="right"
+          orientation="right"
+          label={{ 
+            value: 'Memory (GB) / Utilization (%)', 
+            angle: 90, 
+            position: 'insideRight' 
+          }}
+        />
+
+        <Tooltip {...tooltipStyle} />
+        <Legend {...legendStyle} />
+
+        {/* CPU Lines - always show */}
         <Line 
+          yAxisId="left"
           type="monotone" 
           dataKey="cpuLatency" 
           name="CPU Latency" 
@@ -143,6 +173,7 @@ export function PerformanceChart({
           dot={false}
         />
         <Line 
+          yAxisId="right"
           type="monotone" 
           dataKey="cpuMemory" 
           name="CPU Memory" 
@@ -151,6 +182,7 @@ export function PerformanceChart({
           dot={false}
         />
         <Line 
+          yAxisId="right"
           type="monotone" 
           dataKey="cpuUtilization" 
           name="CPU Utilization" 
@@ -158,32 +190,39 @@ export function PerformanceChart({
           strokeWidth={2}
           dot={false}
         />
-        
-        {/* GPU Metrics */}
-        <Line 
-          type="monotone" 
-          dataKey="gpuLatency" 
-          name="GPU Latency" 
-          stroke="#06b6d4" 
-          strokeWidth={2}
-          dot={false}
-        />
-        <Line 
-          type="monotone" 
-          dataKey="gpuMemory" 
-          name="GPU Memory" 
-          stroke="#22d3ee" 
-          strokeWidth={2}
-          dot={false}
-        />
-        <Line 
-          type="monotone" 
-          dataKey="gpuUtilization" 
-          name="GPU Utilization" 
-          stroke="#67e8f9" 
-          strokeWidth={2}
-          dot={false}
-        />
+
+        {/* GPU Lines - only show when GPU metrics exist */}
+        {gpuMetrics && (
+          <>
+            <Line 
+              yAxisId="left"
+              type="monotone" 
+              dataKey="gpuLatency" 
+              name="GPU Latency" 
+              stroke="#06b6d4" 
+              strokeWidth={2}
+              dot={false}
+            />
+            <Line 
+              yAxisId="right"
+              type="monotone" 
+              dataKey="gpuMemory" 
+              name="GPU Memory" 
+              stroke="#22d3ee" 
+              strokeWidth={2}
+              dot={false}
+            />
+            <Line 
+              yAxisId="right"
+              type="monotone" 
+              dataKey="gpuUtilization" 
+              name="GPU Utilization" 
+              stroke="#67e8f9" 
+              strokeWidth={2}
+              dot={false}
+            />
+          </>
+        )}
       </LineChart>
     </ResponsiveContainer>
   );

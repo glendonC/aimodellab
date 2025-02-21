@@ -150,7 +150,7 @@ export default function PerformanceModal({
   if (!analysisResult) return null;
 
   const calculator = new PerformanceCalculator();
-  const { cpuMetrics, gpuMetrics, nvOptimizations } = calculator.calculateMetrics(analysisResult);
+  const { cpuMetrics, gpuMetrics, nvOptimizations } = calculator.calculateMetrics(analysisResult, powerMode);
 
   return (
     <AnimatePresence>
@@ -255,27 +255,22 @@ export default function PerformanceModal({
                   </div>
                 </div>
 
-                {/* GPU Metrics */}
-                <div className={cn(
-                  "rounded-lg p-4",
-                  powerMode ? "bg-gray-800/50 border border-cyan-500/30" : "bg-muted"
-                )}>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Zap className="w-5 h-5 text-cyan-400" />
-                    <h3 className={cn(
-                      "font-semibold flex items-center gap-2",
-                      powerMode ? "text-white" : "text-foreground"
-                    )}>
-                      NVIDIA GPU Performance
-                      {powerMode && (
+                {/* GPU Metrics - Only show when GPU metrics exist */}
+                {gpuMetrics && (
+                  <div className={cn(
+                    "rounded-lg p-4",
+                    "bg-black/40 border border-cyan-500/30"
+                  )}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Zap className="w-5 h-5 text-cyan-400" />
+                      <h3 className="font-semibold flex items-center gap-2 text-white">
+                        NVIDIA GPU Mode
                         <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400">
                           RAPIDS Optimized
                         </span>
-                      )}
-                    </h3>
-                  </div>
-                  
-                  <div className="space-y-4">
+                      </h3>
+                    </div>
+                    
                     <MetricBar
                       label="Inference Speed"
                       value={gpuMetrics.fps}
@@ -313,26 +308,10 @@ export default function PerformanceModal({
                       color="cyan"
                       powerMode={powerMode}
                     />
-                  </div>
 
-                  {powerMode && (
-                    <motion.div className="mt-4 p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <LineChart className="w-4 h-4 text-cyan-400" />
-                        <span className="text-sm font-medium text-cyan-400">
-                          RAPIDS Acceleration Impact
-                        </span>
-                      </div>
-                      <div className="text-xs text-cyan-300">
-                        • {nvOptimizations.tensorCoreUsage} Tensor Core Usage
-                        <br />
-                        • {nvOptimizations.memoryBandwidth} Memory Bandwidth
-                        <br />
-                        • {nvOptimizations.speedup} Speedup
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
+                    {/* RAPIDS info section */}
+                  </div>
+                )}
               </div>
 
               {/* Add the explanation panel */}

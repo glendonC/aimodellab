@@ -36,6 +36,7 @@ export type ModelGraph = {
     totalMemory: number;
     modelId?: string;
   };
+  layers: LayerMetrics[];
 };
 
 export type AnalysisProgress = {
@@ -72,3 +73,9 @@ export type InferenceAnimation = {
   startTime: number;
   duration: number;
 };
+
+export interface LayerMetrics {
+  flops: number;
+  parameters: number;
+  memory: number;
+}
