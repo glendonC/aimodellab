@@ -79,3 +79,34 @@ export interface LayerMetrics {
   parameters: number;
   memory: number;
 }
+
+export interface ModelMetrics {
+  inferenceSpeed: number;
+  latency: number;
+  memoryUsage: number;
+  utilization: number;
+}
+
+export interface OptimizationResult {
+  modelType: string;
+  originalMetrics: ModelMetrics;
+  optimizedMetrics: ModelMetrics;
+  optimizations: {
+    tensorRT: {
+      enabled: boolean;
+      precisionMode: 'FP32' | 'FP16' | 'INT8';
+      layerFusion: boolean;
+      dynamicBatching: boolean;
+    };
+    rapids: {
+      enabled: boolean;
+      dataflowOptimized: boolean;
+      memoryPooling: boolean;
+    };
+    performance: {
+      speedupFactor: number;
+      memoryReduction: number;
+      latencyImprovement: number;
+    };
+  };
+}

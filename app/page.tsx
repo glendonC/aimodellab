@@ -11,6 +11,7 @@ import ModelComparison from '@/components/ModelComparison';
 import PerformanceModal from '@/components/PerformanceModal';
 import ModelBuilder from '@/components/ModelBuilder';
 import { useModelAnalysis } from '@/hooks/useModelAnalysis';
+import { NvidiaOptimizationModal } from '@/components/NvidiaOptimizationModal';
 
 type ViewMode = '3d-analysis' | 'model-builder';
 
@@ -21,6 +22,7 @@ export default function ModelDebugger() {
   const [isPresetsOpen, setIsPresetsOpen] = useState(false);
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   const [isPerformanceOpen, setIsPerformanceOpen] = useState(false);
+  const [isOptimizationOpen, setIsOptimizationOpen] = useState(false);
   const { analyzeModel, isAnalyzing, result: analysisResult } = useModelAnalysis();
 
   const handleModelSelect = async (modelId: string) => {
@@ -172,9 +174,7 @@ export default function ModelDebugger() {
         {/* NVIDIA Optimization Button */}
         {powerMode && (
           <motion.button
-            onClick={() => {
-              // Add NVIDIA optimization logic here
-            }}
+            onClick={() => setIsOptimizationOpen(true)}  // Update this line
             className="p-4 rounded-full shadow-lg flex items-center gap-2 bg-green-500 text-white hover:bg-green-600 transition-all duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -276,11 +276,22 @@ export default function ModelDebugger() {
 
       {/* Performance Modal */}
       <PerformanceModal
-        isOpen={isPerformanceOpen}
-        onClose={() => setIsPerformanceOpen(false)}
-        powerMode={powerMode}
-        analysisResult={analysisResult}
-      />
+          isOpen={isPerformanceOpen}
+          onClose={() => setIsPerformanceOpen(false)}
+          powerMode={powerMode}
+          analysisResult={analysisResult}
+        />
+
+        {/* NVIDIA Optimization Modal */}
+        <NvidiaOptimizationModal
+          isOpen={isOptimizationOpen}
+          onClose={() => setIsOptimizationOpen(false)}
+          modelId={analysisResult?.graph?.metadata?.modelId || ''}
+          currentMetrics={analysisResult?.graph?.metadata || {}}
+          onOptimizationComplete={(result) => {
+          setPowerMode(true);
+          }}
+        />
     </div>
   );
 }
