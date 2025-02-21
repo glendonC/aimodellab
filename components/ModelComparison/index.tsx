@@ -34,6 +34,7 @@ export default function ModelComparison({
     raceProgress,
     winner
   } = useModelRace();
+  const [raceProgressState, setRaceProgress] = useState({ modelA: 0, modelB: 0 });
 
   const handleModelSelect = async (modelId: string) => {
     try {
@@ -104,6 +105,7 @@ export default function ModelComparison({
           comparisonModel={comparisonModel}
           isRacing={isRacing}
           raceProgress={raceProgress}
+          setRaceProgress={setRaceProgress}
           winner={winner}
           onStartRace={handleStartRace}
           powerMode={powerMode}
@@ -118,6 +120,8 @@ export default function ModelComparison({
           baseModel={baseModel}
           comparisonModel={comparisonModel}
           powerMode={powerMode}
+          modelAGpu={modelAGpu}
+          modelBGpu={modelBGpu}
         />
       )}
     </motion.div>

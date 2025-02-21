@@ -5,12 +5,14 @@ import { Play, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnalysisResult } from '@/lib/model/types';
 import { RaceProgress } from './RaceProgress';
+import { useEffect } from 'react';
 
 type RaceControlsProps = {
   baseModel: AnalysisResult;
   comparisonModel: AnalysisResult;
   isRacing: boolean;
   raceProgress: { modelA: number; modelB: number };
+  setRaceProgress: (progress: { modelA: number; modelB: number } | ((prev: { modelA: number; modelB: number }) => { modelA: number; modelB: number })) => void;
   winner: 'modelA' | 'modelB' | null;
   onStartRace: () => void;
   powerMode: boolean;
@@ -23,6 +25,7 @@ export function RaceControls({
   comparisonModel,
   isRacing,
   raceProgress,
+  setRaceProgress,
   winner,
   onStartRace,
   powerMode,
@@ -31,6 +34,42 @@ export function RaceControls({
 }: RaceControlsProps) {
   const baseModelName = baseModel.graph.metadata.modelId?.split('/').pop() || 'Model A';
   const comparisonModelName = comparisonModel.graph.metadata.modelId?.split('/').pop() || 'Model B';
+
+  // Calculate actual speeds based on inference times and GPU mode
+  const getModelSpeed = (model: AnalysisResult, useGpu: boolean) => {
+    // Convert inference time to operations per second (higher number = faster)
+    const baseSpeed = 1000 / model.performance.inferenceTime;
+    
+    if (useGpu) {
+      const modelType = model.graph.metadata.modelId?.toLowerCase() || '';
+      let speedupFactor = 2; // Default GPU speedup
+
+      if (modelType.includes('transformer')) speedupFactor = 4;
+      else if (modelType.includes('cnn')) speedupFactor = 3;
+      else if (modelType.includes('yolo')) speedupFactor = 2.8;
+      
+      return baseSpeed * speedupFactor;
+    }
+    
+    return baseSpeed;
+  };
+
+  const modelASpeed = getModelSpeed(baseModel, modelAGpu);
+  const modelBSpeed = getModelSpeed(comparisonModel, modelBGpu);
+
+  // Use these speeds to update progress in the parent component
+  useEffect(() => {
+    if (isRacing) {
+      const interval = setInterval(() => {
+        setRaceProgress(prev => ({
+          modelA: prev.modelA + (66.7 / 100), // Scale down for smoother animation
+          modelB: prev.modelB + (357.1 / 100)
+        }));
+      }, 16);
+
+      return () => clearInterval(interval);
+    }
+  }, [isRacing]);
 
   return (
     <div className="p-4 border-t">
