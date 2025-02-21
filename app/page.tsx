@@ -46,12 +46,14 @@ export default function ModelDebugger() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-6"
         >
-          <h1 className={cn(
-            "text-4xl font-bold tracking-tight mb-4",
-            powerMode ? "text-white" : "text-black"
-          )}>
-            Model Intelligence Lab
-          </h1>
+          <div className="flex flex-col items-center">
+            <h1 className={cn(
+              "text-4xl font-bold tracking-tight mb-4",
+              powerMode ? "text-white" : "text-black"
+            )}>
+              Model Intelligence Lab
+            </h1>
+          </div>
           <p className={cn(
             powerMode ? "text-gray-300" : "text-gray-600"
           )}>

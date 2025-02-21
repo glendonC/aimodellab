@@ -926,6 +926,9 @@ video {
 .h-px {
   height: 1px;
 }
+.h-\[calc\(100vh-12rem\)\] {
+  height: calc(100vh - 12rem);
+}
 .max-h-96 {
   max-height: 24rem;
 }
@@ -1385,6 +1388,9 @@ video {
 }
 .border-white\/20 {
   border-color: rgb(255 255 255 / 0.2);
+}
+.border-gray-200\/50 {
+  border-color: rgb(229 231 235 / 0.5);
 }
 .border-l-transparent {
   border-left-color: transparent;

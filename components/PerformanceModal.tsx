@@ -152,6 +152,24 @@ export default function PerformanceModal({
   const calculator = new PerformanceCalculator();
   const { cpuMetrics, gpuMetrics, nvOptimizations } = calculator.calculateMetrics(analysisResult, powerMode);
 
+  // Get model name from ID
+  const getDisplayName = (modelId: string = '') => {
+    const id = modelId.toLowerCase();
+    if (id.includes('resnet')) return 'ResNet-50';
+    if (id.includes('yolo')) return 'YOLOv8';
+    if (id.includes('stable')) return 'Stable Diffusion';
+    if (id.includes('llama')) return 'LLaMA 2';
+    if (id.includes('gpt')) return 'GPT-2';
+    if (id.includes('bart')) return 'BART';
+    if (id.includes('whisper')) return 'Whisper';
+    if (id.includes('vit')) return 'ViT';
+    if (id.includes('biobert')) return 'BioBERT';
+    if (id.includes('dino')) return 'DINOv2';
+    return 'ResNet-50';
+  };
+
+  const modelName = getDisplayName(analysisResult.graph.metadata.modelId);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -182,6 +200,9 @@ export default function PerformanceModal({
                   powerMode ? "text-white" : "text-foreground"
                 )}>
                   Performance Analysis
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    ({modelName})
+                  </span>
                 </h2>
               </div>
               <motion.button
