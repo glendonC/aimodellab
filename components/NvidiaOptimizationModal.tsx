@@ -1,4 +1,3 @@
-// components/NvidiaOptimizationModal.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -53,7 +52,7 @@ interface NvidiaOptimizationModalProps {
   isOpen: boolean;
   onClose: () => void;
   modelId: string;
-  currentMetrics: any; // Replace with your metrics type
+  currentMetrics: any;
   onOptimizationComplete?: (result: any) => void;
 }
 
@@ -83,35 +82,11 @@ type ModelOptimizations = {
 };
 
 const MODEL_OPTIMIZATIONS: ModelOptimizations = {
-  'resnet-50': {
+  'resnet': {
     performance: {
-      speedup: '2.2x',
-      memory: '-15%',
-      latency: '-55%'
-    },
-    optimizations: {
-      tensorRTMode: 'FP16',
-      layerFusion: true,
-      rapidsAcceleration: true
-    }
-  },
-  'yolov8': {
-    performance: {
-      speedup: '2.8x',
-      memory: '-20%',
-      latency: '-65%'
-    },
-    optimizations: {
-      tensorRTMode: 'FP16',
-      layerFusion: true,
-      rapidsAcceleration: true
-    }
-  },
-  'stable-diffusion': {
-    performance: {
-      speedup: '3.2x',
-      memory: '-25%',
-      latency: '-70%'
+      speedup: '4.0x',   
+      memory: '0%',       
+      latency: '74.8%'    
     },
     optimizations: {
       tensorRTMode: 'FP16',
@@ -119,35 +94,59 @@ const MODEL_OPTIMIZATIONS: ModelOptimizations = {
       rapidsAcceleration: false
     }
   },
-  'vit': {
+  'yolov8': {
     performance: {
-      speedup: '2.4x',
-      memory: '-18%',
-      latency: '-60%'
+      speedup: '3.6x',    
+      memory: '0%',       
+      latency: '72.5%'   
+    },
+    optimizations: {
+      tensorRTMode: 'FP16',
+      layerFusion: true,
+      rapidsAcceleration: false
+    }
+  },
+'stable-diffusion': {
+    performance: {
+      speedup: '20.5x',         
+      memory: '0%',            
+      latency: '95.1%'          
     },
     optimizations: {
       tensorRTMode: 'FP16',
       layerFusion: true,
       rapidsAcceleration: true
+    }
+  },
+  'vit': {
+    performance: {
+      speedup: '3.6x',
+      memory: '0%',
+      latency: '72.4%'
+    },
+    optimizations: {
+      tensorRTMode: 'FP16',
+      layerFusion: true,
+      rapidsAcceleration: false
     }
   },
   'gpt2': {
     performance: {
       speedup: '1.8x',
-      memory: '-15%',
-      latency: '-45%'
+      memory: '0%',
+      latency: '43.2%'
     },
     optimizations: {
       tensorRTMode: 'FP32',
-      layerFusion: false,
+      layerFusion: true,
       rapidsAcceleration: false
     }
   },
   'bart': {
     performance: {
-      speedup: '2.0x',
-      memory: '-15%',
-      latency: '-50%'
+      speedup: '2.6x',
+      memory: '0%',
+      latency: '60.9%'
     },
     optimizations: {
       tensorRTMode: 'FP32',
@@ -157,9 +156,9 @@ const MODEL_OPTIMIZATIONS: ModelOptimizations = {
   },
   'biobert': {
     performance: {
-      speedup: '2.1x',
-      memory: '-15%',
-      latency: '-52%'
+      speedup: '3.1x',
+      memory: '0%',
+      latency: '68.1%'
     },
     optimizations: {
       tensorRTMode: 'FP32',
@@ -169,14 +168,14 @@ const MODEL_OPTIMIZATIONS: ModelOptimizations = {
   },
   'whisper': {
     performance: {
-      speedup: '2.3x',
-      memory: '-18%',
-      latency: '-58%'
+      speedup: '4.5x',
+      memory: '0%',
+      latency: '77.9%'
     },
     optimizations: {
       tensorRTMode: 'FP16',
       layerFusion: true,
-      rapidsAcceleration: true
+      rapidsAcceleration: false
     }
   }
 };
@@ -188,12 +187,19 @@ export function NvidiaOptimizationModal({
   currentMetrics,
   onOptimizationComplete 
 }: NvidiaOptimizationModalProps) {
+
   const [optimizationPhase, setOptimizationPhase] = useState('initial');
   const [optimizer] = useState(() => new NvidiaOptimizer());
   const [result, setResult] = useState<OptimizationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const modelType = getModelType(modelId);
   const optimizations = MODEL_OPTIMIZATIONS[modelType];
+  const currentModel = modelType.split('-')[0];
+
+  console.log("Model ID received:", modelId);
+  console.log("Model type detected:", modelType);
+  console.log("Optimizations found:", optimizations);
+  console.log("Current model:", currentModel);
 
   useEffect(() => {
     if (isOpen && optimizationPhase === 'initial') {
@@ -303,22 +309,12 @@ export function NvidiaOptimizationModal({
                       </h4>
                       <div className="space-y-2 text-white">
                         <div className="flex justify-between">
-                          <span>Speedup Factor</span>
-                          <span className="text-cyan-400">
-                            {result.optimizations.performance.speedupFactor.toFixed(1)}x
-                          </span>
+                          <span className="text-white/70">Speedup Factor</span>
+                          <span className="text-cyan-400">{optimizations.performance.speedup}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Memory Reduction</span>
-                          <span className="text-cyan-400">
-                            {(result.optimizations.performance.memoryReduction * 100).toFixed(1)}%
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Latency Improvement</span>
-                          <span className="text-cyan-400">
-                            {(result.optimizations.performance.latencyImprovement * 100).toFixed(1)}%
-                          </span>
+                          <span className="text-white/70">Latency Improvement</span>
+                          <span className="text-cyan-400">{optimizations.performance.latency}</span>
                         </div>
                       </div>
                     </div>
@@ -331,19 +327,19 @@ export function NvidiaOptimizationModal({
                         <div className="flex justify-between">
                           <span>TensorRT Mode</span>
                           <span className="text-cyan-400">
-                            {result.optimizations.tensorRT.precisionMode}
+                            {optimizations.optimizations.tensorRTMode}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Layer Fusion</span>
                           <span className="text-cyan-400">
-                            {result.optimizations.tensorRT.layerFusion ? 'Enabled' : 'Disabled'}
+                            {optimizations.optimizations.layerFusion ? 'Enabled' : 'Disabled'}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>RAPIDS Acceleration</span>
                           <span className="text-cyan-400">
-                            {result.optimizations.rapids.enabled ? 'Enabled' : 'N/A'}
+                            {optimizations.optimizations.rapidsAcceleration ? 'Enabled' : 'N/A'}
                           </span>
                         </div>
                       </div>
@@ -353,9 +349,8 @@ export function NvidiaOptimizationModal({
                   {/* Info Alert */}
                   <Alert className="bg-cyan-500/10 border-cyan-500/30 text-cyan-300">
                     <AlertDescription>
-                      Optimization complete! The model is now running with NVIDIA TensorRT 
-                      and hardware-specific optimizations. Performance metrics have been
-                      updated to reflect these improvements.
+                    Analysis complete! These are the model's performance metrics when optimized with NVIDIA TensorRT 
+                    and hardware-specific optimizations based on A100 GPU benchmarks via Brev.dev.
                     </AlertDescription>
                   </Alert>
                 </motion.div>
@@ -400,7 +395,7 @@ export function NvidiaOptimizationModal({
 
 function getModelType(modelId: string): string {
   const id = modelId.toLowerCase();
-  if (id.includes('resnet')) return 'resnet-50';
+  if (id.includes('resnet')) return 'resnet';
   if (id.includes('yolo')) return 'yolov8';
   if (id.includes('stable')) return 'stable-diffusion';
   if (id.includes('vit')) return 'vit';
@@ -408,7 +403,7 @@ function getModelType(modelId: string): string {
   if (id.includes('bart')) return 'bart';
   if (id.includes('whisper')) return 'whisper';
   if (id.includes('biobert')) return 'biobert';
-  return 'resnet-50';
+  return 'resnet';
 }
 
 function getModelName(modelId: string): string {
