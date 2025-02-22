@@ -15,6 +15,8 @@ export type ModelNode = {
   attributes: Record<string, any>;
   activationLevel?: number;
   inferenceState?: 'idle' | 'processing' | 'complete';
+  isValid?: boolean;
+  validationErrors?: string[];
 };
 
 export type ModelEdge = {

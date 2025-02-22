@@ -31,6 +31,7 @@ const COMPONENTS = [
   { type: 'transformer' as LayerType, name: 'Transformer', category: 'Attention', description: 'Self-attention mechanism' },
   { type: 'attention' as LayerType, name: 'Attention', category: 'Attention', description: 'Attention layer' },
   { type: 'embedding' as LayerType, name: 'Embedding', category: 'Attention', description: 'Word/token embeddings' },
+  { type: 'globalavgpool1d' as LayerType, name: 'Global Avg Pool', category: 'Attention', description: 'Global average pooling' },
   
   // Recurrent
   { type: 'rnn' as LayerType, name: 'RNN', category: 'Recurrent', description: 'Simple recurrent layer' },

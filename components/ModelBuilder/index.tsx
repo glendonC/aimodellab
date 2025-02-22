@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Play, Code, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, Code, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ComponentLibrary } from './ComponentLibrary';
 import { LayerStack } from './LayerStack/index';
@@ -10,6 +10,7 @@ import { NvidiaInsightsPanel } from './NvidiaInsightsPanel';
 import { CodeExportPanel } from './CodeExportPanel';
 import { ModelNode } from '@/lib/model/types';
 import { ModelSimulator, SimulationResult } from '@/lib/model/simulator';
+import { ModelValidator, ValidationResult } from '@/lib/model/validator';
 import { VisualizationOverlay } from '@/components/ModelVisualization/VisualizationOverlay';
 
 type ModelBuilderProps = {
@@ -23,7 +24,14 @@ export default function ModelBuilder({ powerMode }: ModelBuilderProps) {
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResults, setSimulationResults] = useState<SimulationResult | null>(null);
   const [currentModel, setCurrentModel] = useState<'resnet' | 'yolov8' | 'stable-diffusion' | 'llama2' | 'gpt2' | 'transformer'>('resnet');
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const simulator = new ModelSimulator();
+  const validator = new ModelValidator();
+
+  useEffect(() => {
+    const result = validator.validate(nodes);
+    setValidationResult(result);
+  }, [nodes]);
 
   const handleAddNode = (node: ModelNode) => {
     setNodes(prev => [...prev, node]);
@@ -35,6 +43,12 @@ export default function ModelBuilder({ powerMode }: ModelBuilderProps) {
   };
 
   const handleRunSimulation = async () => {
+    const validation = validator.validate(nodes);
+    if (!validation.isValid) {
+      setValidationResult(validation);
+      return;
+    }
+
     setIsSimulating(true);
     try {
       const result = await simulator.runSimulation(nodes);
@@ -75,13 +89,13 @@ export default function ModelBuilder({ powerMode }: ModelBuilderProps) {
         )}>
           <motion.button
             onClick={handleRunSimulation}
-            disabled={isSimulating}
+            disabled={isSimulating || (validationResult && !validationResult.isValid)}
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors",
               powerMode
                 ? "bg-cyan-500 text-white hover:bg-cyan-600"
                 : "bg-black text-white hover:bg-gray-800",
-              isSimulating && "opacity-50 cursor-not-allowed"
+              (isSimulating || (validationResult && !validationResult.isValid)) && "opacity-50 cursor-not-allowed"
             )}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -114,7 +128,63 @@ export default function ModelBuilder({ powerMode }: ModelBuilderProps) {
           onNodesChange={setNodes}
           powerMode={powerMode}
           isSimulating={isSimulating}
+          validationResult={validationResult}
         />
+
+        {/* Validation Errors Panel */}
+        <AnimatePresence>
+          {validationResult && validationResult.errors.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, x: 300 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 300 }}
+              className={cn(
+                "fixed top-1/2 -translate-y-1/2 right-8 w-80 rounded-lg shadow-xl z-50",
+                powerMode ? "bg-gray-900/95 border border-red-500/30" : "bg-white/95 border border-red-200",
+                "backdrop-blur-md"
+              )}
+            >
+              <div className="p-4 border-b flex items-center gap-2">
+                <AlertTriangle className={cn(
+                  "w-5 h-5",
+                  powerMode ? "text-red-400" : "text-red-500"
+                )} />
+                <h3 className={cn(
+                  "font-semibold",
+                  powerMode ? "text-white" : "text-red-900"
+                )}>
+                  Validation Issues
+                </h3>
+              </div>
+              
+              <div className="p-4 max-h-[60vh] overflow-y-auto">
+                <ul className="space-y-3">
+                  {validationResult.errors.map((error, i) => (
+                    <motion.li
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className={cn(
+                        "p-3 rounded-lg",
+                        powerMode 
+                          ? "bg-red-500/10 border border-red-500/20" 
+                          : "bg-red-50 border border-red-100"
+                      )}
+                    >
+                      <p className={cn(
+                        "text-sm",
+                        powerMode ? "text-red-200" : "text-red-700"
+                      )}>
+                        {error.message}
+                      </p>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Code Export Panel */}
         <CodeExportPanel

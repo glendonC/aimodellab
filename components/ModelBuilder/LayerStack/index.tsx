@@ -36,7 +36,6 @@ export function LayerStack({ nodes, onNodesChange, powerMode, isSimulating }: La
           "text-sm font-medium",
           powerMode ? "text-white/70" : "text-gray-600"
         )}>
-          Model Architecture
         </h3>
       </div>
 

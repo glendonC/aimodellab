@@ -12,7 +12,8 @@ export const LAYER_COLORS = {
   pooling: '#0ea5e9',
   dropout: '#6366f1',
   embedding: '#d946ef',
-  flatten: '#14b8a6'
+  flatten: '#14b8a6',
+  globalavgpool1d: '#0284c7'
 };
 
 export const LAYER_STATS = {

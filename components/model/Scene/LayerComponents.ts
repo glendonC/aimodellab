@@ -14,6 +14,7 @@ import { PoolingBlock } from '../layers/PoolingBlock';
 import { DropoutBlock } from '../layers/DropoutBlock';
 import { EmbeddingBlock } from '../layers/EmbeddingBlock';
 import { FlattenBlock } from '../layers/FlattenBlock';
+import { GlobalAveragePooling1D } from '../layers/GlobalAveragePooling1D';
 
 export const LayerComponents = {
   input: InputLayer,
@@ -29,5 +30,6 @@ export const LayerComponents = {
   pooling: PoolingBlock,
   dropout: DropoutBlock,
   embedding: EmbeddingBlock,
-  flatten: FlattenBlock
+  flatten: FlattenBlock,
+  globalavgpool1d: GlobalAveragePooling1D
 };

@@ -12,7 +12,8 @@ export type LayerType =
   | 'pooling'
   | 'dropout'
   | 'embedding'
-  | 'flatten';
+  | 'flatten'
+  | 'globalavgpool1d';
 
 export type LayerStats = {
   neurons: number;
