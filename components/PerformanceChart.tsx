@@ -22,24 +22,12 @@ type PerformanceChartProps = {
   modelId: string;
 };
 
-// Add model-specific noise patterns
-const getModelNoisePattern = (modelId: string, time: number) => {
-  const id = modelId.toLowerCase();
-  const baseNoise = Math.sin(time * 0.5) * 0.1;
-  
-  if (id.includes('yolo')) {
-    // YOLO has more stable performance with occasional spikes
-    return baseNoise * 0.5 + (Math.random() > 0.9 ? 0.2 : 0);
-  } else if (id.includes('stable')) {
-    // Stable Diffusion has cyclical patterns
-    return baseNoise * 1.5 + Math.sin(time * 0.8) * 0.15;
-  } else if (id.includes('llama') || id.includes('gpt')) {
-    // Language models have varying load based on sequence length
-    return baseNoise + Math.sin(time * 0.3) * 0.2;
-  }
-  // Default pattern for ResNet etc
-  return baseNoise;
-};
+function generateTimeSeriesData(baseValue: number, points: number = 20): { time: number; value: number }[] {
+  return Array.from({ length: points }, (_, i) => ({
+    time: i,
+    value: baseValue + (Math.random() - 0.5) * baseValue * 0.1
+  }));
+}
 
 export function PerformanceChart({ cpuMetrics, gpuMetrics, powerMode, modelId }: PerformanceChartProps) {
   // If no GPU metrics, only show CPU data
