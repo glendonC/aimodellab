@@ -404,6 +404,18 @@ const MODEL_TEMPLATES: ModelTemplate[] = [
         }
       },
       {
+        id: 'global-pool',
+        type: 'globalavgpool1d',
+        name: 'Global Average Pooling',
+        opType: 'globalavgpool1d',
+        params: 0,
+        flops: 25600,
+        memoryUsage: 1024,
+        inputShapes: [[1, 100, 256]],
+        outputShapes: [[1, 256]],
+        attributes: {}
+      },
+      {
         id: 'dense-1',
         type: 'mlp',
         name: 'Dense (256 neurons)',

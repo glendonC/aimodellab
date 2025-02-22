@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ResizableBox } from "react-resizable";
-import { X, Copy, Download, Check, Code, Loader2 } from "lucide-react";
+import { X, Copy, Download, Check, Code, Loader2, Sparkles, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModelNode } from "@/lib/model/types";
 import { CodeGenerator } from "@/lib/model/codeGenerator";
@@ -21,7 +21,11 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
   const [isLoading, setIsLoading] = useState(true);
   const [code, setCode] = useState("");
   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
-  const [position, setPosition] = useState({ x: 100, y: 100 }); // Default position
+  const [position, setPosition] = useState({ x: 100, y: 100 });
+  const [isRefactorOpen, setIsRefactorOpen] = useState(false);
+  const [refactorPrompt, setRefactorPrompt] = useState("");
+  const [isRefactoring, setIsRefactoring] = useState(false);
+  const [refactorExplanation, setRefactorExplanation] = useState<string | null>(null);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -63,6 +67,24 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  // Handle Refactor
+  const handleRefactor = async () => {
+    if (!refactorPrompt.trim()) return;
+    
+    setIsRefactoring(true);
+    
+    // Simulate AI refactoring process
+    setTimeout(() => {
+      // For now, just add a comment to demonstrate the UI
+      const refactoredCode = `# Refactored based on: ${refactorPrompt}\n# Optimizations applied:\n# - Improved inference speed\n# - Reduced memory usage\n# - Enhanced GPU utilization\n\n${code}`;
+      setCode(refactoredCode);
+      setRefactorExplanation("Applied performance optimizations including tensor operation fusion, memory layout optimization, and GPU-specific enhancements.");
+      setIsRefactoring(false);
+      setIsRefactorOpen(false);
+      setRefactorPrompt("");
+    }, 2000);
   };
 
   // Drag Start
@@ -116,7 +138,7 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
           <div
             className="p-4 border-b flex items-center justify-between cursor-move"
             onMouseDown={handleMouseDown}
-            style={{ touchAction: "none" }} // Ensures smooth dragging on touch devices
+            style={{ touchAction: "none" }}
           >
             <div className="flex items-center gap-2">
               <Code className={cn("w-5 h-5", powerMode && "text-cyan-400")} />
@@ -141,60 +163,169 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
           <ResizableBox
             width={dimensions.width}
             height={dimensions.height}
-            minConstraints={[600, 400]} // Increased minimum height
+            minConstraints={[600, 400]}
             maxConstraints={[1000, 700]}
             onResizeStop={(event, { size }) => setDimensions(size)}
           >
+            {/* Content container */}
+            <div className="flex flex-col h-full">
+              {/* Code Display Section */}
+              <div className="flex-1 p-4 overflow-auto">
+                <pre
+                  className={cn(
+                    "w-full h-full p-4 rounded-lg",
+                    powerMode ? "bg-black/90 text-white" : "bg-white text-black border"
+                  )}
+                  style={{ minHeight: "100%", maxHeight: "100%", overflow: "auto" }}
+                >
+                  <code>{code}</code>
+                </pre>
+              </div>
 
-          {/* Content container: Forces consistent structure */}
-          <div className="flex flex-col h-full">
+              {/* Footer (Buttons) */}
+              <div 
+                className={cn("p-4 border-t flex items-center justify-between gap-2", 
+                  powerMode ? "border-white/10" : "border-border"
+                )}
+                style={{ minHeight: "60px" }}
+              >
+                {/* Refactor Section */}
+                <div className="relative">
+                  <motion.button
+                    onClick={() => setIsRefactorOpen(!isRefactorOpen)}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 rounded-md transition-colors",
+                      powerMode 
+                        ? "bg-cyan-500 text-white hover:bg-cyan-600" 
+                        : "bg-black text-white hover:bg-gray-800"
+                    )}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Refactor with AI
+                    <ChevronDown className={cn(
+                      "w-4 h-4 transition-transform",
+                      isRefactorOpen && "transform rotate-180"
+                    )} />
+                  </motion.button>
 
-          {/* Code Display Section */}
-          <div className="flex-1 p-4 overflow-auto">
-            <pre
-              className={cn(
-                "w-full h-full p-4 rounded-lg",
-                powerMode ? "bg-black/90 text-white" : "bg-white text-black border"
-              )}
-              style={{ minHeight: "100%", maxHeight: "100%", overflow: "auto" }} // Ensures full stretch
-            >
-              <code>{code}</code>
-            </pre>
-          </div>
+                  <AnimatePresence>
+                    {isRefactorOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className={cn(
+                          "absolute left-0 right-0 mt-2 p-3 rounded-lg shadow-lg",
+                          powerMode ? "bg-gray-800 border border-cyan-500/30" : "bg-white border border-gray-200"
+                        )}
+                      >
+                        <input
+                          type="text"
+                          value={refactorPrompt}
+                          onChange={(e) => setRefactorPrompt(e.target.value)}
+                          placeholder="e.g., Optimize for inference speed"
+                          className={cn(
+                            "w-full px-3 py-2 rounded-md mb-2",
+                            powerMode 
+                              ? "bg-gray-900 text-white border border-white/10" 
+                              : "bg-gray-100 text-black border border-gray-200"
+                          )}
+                        />
+                        <motion.button
+                          onClick={handleRefactor}
+                          disabled={isRefactoring}
+                          className={cn(
+                            "w-full px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                            powerMode 
+                              ? "bg-cyan-500 text-white hover:bg-cyan-600" 
+                              : "bg-black text-white hover:bg-gray-800",
+                            isRefactoring && "opacity-50 cursor-not-allowed"
+                          )}
+                          whileHover={isRefactoring ? {} : { scale: 1.02 }}
+                          whileTap={isRefactoring ? {} : { scale: 0.98 }}
+                        >
+                          {isRefactoring ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Refactoring...
+                            </div>
+                          ) : (
+                            "Apply Refactor"
+                          )}
+                        </motion.button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
-          {/* Footer (Buttons) */}
-          <div 
-            className={cn("p-4 border-t flex items-center justify-end gap-2", powerMode ? "border-white/10" : "border-border")}
-            style={{ minHeight: "60px" }} // Ensures space for buttons
-          >
-            <motion.button
-              onClick={handleCopyCode}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-md transition-colors",
-                powerMode ? "hover:bg-white/10 text-white" : "hover:bg-gray-100 text-foreground"
-              )}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-              {copied ? "Copied!" : "Copy Code"}
-            </motion.button>
-            <motion.button
-              onClick={handleDownloadCode}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-md",
-                powerMode ? "bg-cyan-500 text-white hover:bg-cyan-600" : "bg-black text-white hover:bg-gray-800"
-              )}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Download className="w-4 h-4" />
-              Download Code
-              </motion.button>
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2">
+                  <motion.button
+                    onClick={handleCopyCode}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 rounded-md transition-colors",
+                      powerMode ? "hover:bg-white/10 text-white" : "hover:bg-gray-100 text-foreground"
+                    )}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    {copied ? "Copied!" : "Copy Code"}
+                  </motion.button>
+                  <motion.button
+                    onClick={handleDownloadCode}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 rounded-md",
+                      powerMode ? "bg-cyan-500 text-white hover:bg-cyan-600" : "bg-black text-white hover:bg-gray-800"
+                    )}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Code
+                  </motion.button>
+                </div>
+              </div>
+
+              {/* Refactor Explanation */}
+              <AnimatePresence>
+                {refactorExplanation && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className={cn(
+                      "p-4 border-t",
+                      powerMode ? "border-white/10 bg-cyan-500/10" : "border-border bg-blue-50"
+                    )}
+                  >
+                    <div className="flex items-start gap-2">
+                      <Sparkles className={cn(
+                        "w-5 h-5 mt-0.5",
+                        powerMode ? "text-cyan-400" : "text-blue-500"
+                      )} />
+                      <div>
+                        <h4 className={cn(
+                          "font-medium mb-1",
+                          powerMode ? "text-white" : "text-black"
+                        )}>
+                          AI Refactor Applied
+                        </h4>
+                        <p className={cn(
+                          "text-sm",
+                          powerMode ? "text-white/70" : "text-gray-600"
+                        )}>
+                          {refactorExplanation}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </div>
-        </ResizableBox>
-
+          </ResizableBox>
         </motion.div>
       )}
     </AnimatePresence>
