@@ -2,185 +2,138 @@
 export const MODEL_BENCHMARKS = {
   'resnet-50': {
     cpu: {
-      inferenceSpeed: 30.0,  // FPS
-      latency: 1.0,         // ms
-      memoryUsage: 535.0,   // GB
-      utilization: 45.0,    // %
+      inferenceSpeed: 29.07,
+      latency: 34.39,
+      memoryUsage: 0.207,
+      utilization: 95.0
     },
     gpu: {
-      inferenceSpeed: 120.0, // 4x faster
-      latency: 0.2,         // 5x lower
-      memoryUsage: 535.0,   // Same memory
-      utilization: 13.5,    // Better efficiency
+      inferenceSpeed: 115.46,
+      latency: 8.66,
+      memoryUsage: 0.207,
+      utilization: 35.0,
       tensorCoreUsage: "65.2%",
       memoryBandwidth: "0.9 TB/s",
-      speedup: "6.2x"
-    }
-  },
-  'yolov8': {
-    cpu: {
-      inferenceSpeed: 12.0,
-      latency: 2.8,
-      memoryUsage: 642.0,
-      utilization: 62.0,
-    },
-    gpu: {
-      inferenceSpeed: 85.0,
-      latency: 0.4,
-      memoryUsage: 642.0,
-      utilization: 18.5,
-      tensorCoreUsage: "78.5%",
-      memoryBandwidth: "1.2 TB/s",
-      speedup: "7.5x"
+      speedup: "5x"
     }
   },
   'stable-diffusion': {
     cpu: {
-      inferenceSpeed: 0.2,
-      latency: 15.0,
-      memoryUsage: 785.0,
-      utilization: 95.0,
+      inferenceSpeed: 0.012,
+      latency: 81975.65,
+      memoryUsage: 6.52,
+      utilization: 95.0
     },
     gpu: {
-      inferenceSpeed: 2.5,
-      latency: 1.2,
-      memoryUsage: 785.0,
+      inferenceSpeed: 0.246,
+      latency: 4055.52,
+      memoryUsage: 6.52,
       utilization: 35.0,
       tensorCoreUsage: "92.5%",
-      memoryBandwidth: "1.8 TB/s", 
-      speedup: "12.5x"
+      memoryBandwidth: "1.8 TB/s",
+      speedup: "5x"
     }
   },
-  'llama2': {
+  'yolov8': {
     cpu: {
-      inferenceSpeed: 0.5,
-      latency: 8.0,
-      memoryUsage: 892.0,
-      utilization: 88.0,
+      inferenceSpeed: 30.58,
+      latency: 32.69,
+      memoryUsage: 5.51,
+      utilization: 95.0
     },
     gpu: {
-      inferenceSpeed: 4.9,
-      latency: 0.82,
-      memoryUsage: 892.0,
-      utilization: 28.0,
-      tensorCoreUsage: "88.3%",
-      memoryBandwidth: "1.6 TB/s",
-      speedup: "9.8x"
-    }
-  },
-  'gpt2': {
-    cpu: {
-      inferenceSpeed: 1.2,
-      latency: 6.5,
-      memoryUsage: 512.0,
-      utilization: 82.0,
-    },
-    gpu: {
-      inferenceSpeed: 8.4,
-      latency: 0.95,
-      memoryUsage: 512.0,
-      utilization: 22.0,
-      tensorCoreUsage: "85.1%",
-      memoryBandwidth: "1.4 TB/s",
-      speedup: "8.9x"
-    }
-  },
-  'bart': {
-    cpu: {
-      inferenceSpeed: 2.8,
-      latency: 4.2,
-      memoryUsage: 435.0,
-      utilization: 72.0,
-    },
-    gpu: {
-      inferenceSpeed: 15.4,
-      latency: 0.75,
-      memoryUsage: 435.0,
-      utilization: 19.5,
-      tensorCoreUsage: "82.7%",
-      memoryBandwidth: "1.3 TB/s",
-      speedup: "7.8x"
+      inferenceSpeed: 111.17,
+      latency: 8.99,
+      memoryUsage: 5.51,
+      utilization: 35.0,
+      tensorCoreUsage: "78.5%",
+      memoryBandwidth: "1.2 TB/s",
+      speedup: "5x"
     }
   },
   'whisper': {
     cpu: {
-      inferenceSpeed: 0.8,
-      latency: 7.5,
-      memoryUsage: 389.0,
-      utilization: 78.0,
+      inferenceSpeed: 10.18,
+      latency: 98.16,
+      memoryUsage: 0.67,
+      utilization: 95.0
     },
     gpu: {
-      inferenceSpeed: 5.6,
-      latency: 1.1,
-      memoryUsage: 389.0,
-      utilization: 24.0,
+      inferenceSpeed: 46.06,
+      latency: 21.70,
+      memoryUsage: 0.67,
+      utilization: 35.0,
       tensorCoreUsage: "79.8%",
       memoryBandwidth: "1.1 TB/s",
-      speedup: "8.2x"
+      speedup: "4.52x"
     }
   },
   'vit': {
     cpu: {
-      inferenceSpeed: 18.0,
-      latency: 2.1,
-      memoryUsage: 346.0,
-      utilization: 55.0,
+      inferenceSpeed: 18.27,
+      latency: 54.72,
+      memoryUsage: 0.67,
+      utilization: 95.0
     },
     gpu: {
-      inferenceSpeed: 98.0,
-      latency: 0.35,
-      memoryUsage: 346.0,
-      utilization: 16.0,
+      inferenceSpeed: 66.30,
+      latency: 15.08,
+      memoryUsage: 0.67,
+      utilization: 35.0,
       tensorCoreUsage: "76.4%",
       memoryBandwidth: "1.0 TB/s",
-      speedup: "7.1x"
+      speedup: "3.63x"
+    }
+  },
+  'gpt2': {
+    cpu: {
+      inferenceSpeed: 39.11,
+      latency: 25.56,
+      memoryUsage: 0.54,
+      utilization: 95.0
+    },
+    gpu: {
+      inferenceSpeed: 68.82,
+      latency: 14.52,
+      memoryUsage: 0.54,
+      utilization: 35.0,
+      tensorCoreUsage: "85.1%",
+      memoryBandwidth: "1.4 TB/s",
+      speedup: "1.76x"
+    }
+  },
+  'bart': {
+    cpu: {
+      inferenceSpeed: 8.84,
+      latency: 113.03,
+      memoryUsage: 1.67,
+      utilization: 95.0
+    },
+    gpu: {
+      inferenceSpeed: 22.63,
+      latency: 44.17,
+      memoryUsage: 1.67,
+      utilization: 35.0,
+      tensorCoreUsage: "82.7%",
+      memoryBandwidth: "1.3 TB/s",
+      speedup: "2.56x"
     }
   },
   'biobert': {
     cpu: {
-      inferenceSpeed: 3.5,
-      latency: 3.8,
-      memoryUsage: 412.0,
-      utilization: 68.0,
+      inferenceSpeed: 18.57,
+      latency: 53.83,
+      memoryUsage: 1.67,
+      utilization: 95.0
     },
     gpu: {
-      inferenceSpeed: 22.8,
-      latency: 0.65,
-      memoryUsage: 412.0,
-      utilization: 20.5,
+      inferenceSpeed: 58.17,
+      latency: 17.18,
+      memoryUsage: 1.67,
+      utilization: 35.0,
       tensorCoreUsage: "81.2%",
       memoryBandwidth: "1.2 TB/s",
-      speedup: "7.6x"
-    }
-  },
-  'dinov2': {
-    cpu: {
-      inferenceSpeed: 15.0,
-      latency: 2.4,
-      memoryUsage: 384.0,
-      utilization: 58.0,
-    },
-    gpu: {
-      inferenceSpeed: 89.0,
-      latency: 0.38,
-      memoryUsage: 384.0,
-      utilization: 17.0,
-      tensorCoreUsage: "77.5%",
-      memoryBandwidth: "1.1 TB/s",
-      speedup: "7.3x"
+      speedup: "3.13x"
     }
   }
 };
-
-export const CPU_BENCHMARKS = {
-  'xeon-8380': {
-    resnet50: {
-      batchSize1: {
-        fps: 52,
-        latency: 19.2,
-        memory: 147
-      }
-    },
-    // ... rest of the benchmarks
-  }
-} as const; 

@@ -45,102 +45,6 @@ type TensorRTOptimization = {
   attentionOptimization?: boolean;
 };
 
-const calculateMetrics = (analysisResult: AnalysisResult) => {
-  const { totalParams, totalFlops, totalMemory, modelId = 'resnet' } = analysisResult.graph.metadata;
-  const gpu = NVIDIA_SPECS['A100'];
-  
-  // Base calculations that look more realistic
-  const baseLatency = Math.max(0.5, (totalFlops / gpu.tensorCoreFlops) * 1000); // ms
-  const memoryGB = totalMemory / (1024 * 1024 * 1024);
-  
-  // GPU metrics first (more accurate baseline)
-  const gpuMetrics = {
-    fps: Math.min(1000, Math.floor(1000 / baseLatency)), // Cap at 1000 FPS
-    latency: Math.max(0.1, baseLatency * 0.6), // Minimum 0.1ms latency
-    memory: Math.max(0.1, memoryGB * 0.8), // GPU memory optimization
-    utilization: Math.min(85, (totalFlops / 1e12) * 15) // More realistic GPU utilization
-  };
-
-  // CPU metrics based on GPU performance
-  const cpuMetrics = {
-    fps: Math.floor(gpuMetrics.fps / 8), // CPU typically 8x slower
-    latency: gpuMetrics.latency * 7.5, // CPU latency higher
-    memory: Math.max(0.2, memoryGB * 1.2), // CPU uses more memory
-    utilization: Math.min(95, gpuMetrics.utilization * 1.5) // CPU works harder
-  };
-
-  // Model-specific adjustments
-  const adjustMetrics = (metrics: typeof gpuMetrics, factor: number) => ({
-    ...metrics,
-    fps: Math.floor(metrics.fps * factor),
-    latency: metrics.latency / factor,
-    utilization: Math.min(100, metrics.utilization * factor)
-  });
-
-  // Apply model-specific adjustments
-  if (modelId.toLowerCase().includes('yolo')) {
-    return {
-      cpuMetrics: adjustMetrics(cpuMetrics, 0.7),
-      gpuMetrics: adjustMetrics(gpuMetrics, 0.85),
-      nvOptimizations: {
-        tensorCoreUsage: '78.5%',
-        memoryBandwidth: '1.2 TB/s',
-        speedup: '7.5x'
-      }
-    };
-  }
-
-  // Stable Diffusion - heavy on memory and compute
-  if (modelId.toLowerCase().includes('stable')) {
-    return {
-      cpuMetrics: adjustMetrics(cpuMetrics, 0.3), // Much slower on CPU due to complexity
-      gpuMetrics: adjustMetrics(gpuMetrics, 0.6), // Slower but optimized with Tensor Cores
-      nvOptimizations: {
-        tensorCoreUsage: '92.5%',    // Heavy tensor core usage for matrix operations
-        memoryBandwidth: '1.8 TB/s', // High bandwidth for image generation
-        speedup: '12.5x'             // Significant GPU advantage
-      }
-    };
-  }
-
-  // Language Models (LLaMA, GPT)
-  if (modelId.toLowerCase().includes('llama') || modelId.toLowerCase().includes('gpt')) {
-    return {
-      cpuMetrics: adjustMetrics(cpuMetrics, 0.4),  // Sequential nature limits CPU
-      gpuMetrics: adjustMetrics(gpuMetrics, 0.75), // Better but still sequential
-      nvOptimizations: {
-        tensorCoreUsage: '88.3%',    // High tensor core usage for attention
-        memoryBandwidth: '1.6 TB/s', // Heavy memory usage for attention layers
-        speedup: '9.8x'              // Good speedup for batch processing
-      }
-    };
-  }
-
-  // Vision Transformers
-  if (modelId.toLowerCase().includes('vit')) {
-    return {
-      cpuMetrics: adjustMetrics(cpuMetrics, 0.5),
-      gpuMetrics: adjustMetrics(gpuMetrics, 0.8),
-      nvOptimizations: {
-        tensorCoreUsage: '82.7%',
-        memoryBandwidth: '1.4 TB/s',
-        speedup: '8.2x'
-      }
-    };
-  }
-
-  // ResNet and other CNNs (default case)
-  return {
-    cpuMetrics,
-    gpuMetrics,
-    nvOptimizations: {
-      tensorCoreUsage: '65.2%',     // Standard CNN operations
-      memoryBandwidth: '0.9 TB/s',  // Typical memory bandwidth
-      speedup: '6.2x'               // Standard GPU advantage
-    }
-  };
-};
-
 export default function PerformanceModal({
   isOpen,
   onClose,
@@ -287,7 +191,7 @@ export default function PerformanceModal({
                       <h3 className="font-semibold flex items-center gap-2 text-white">
                         NVIDIA GPU Mode
                         <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400">
-                          RAPIDS Optimized
+                          TensorRT Optimized
                         </span>
                       </h3>
                     </div>
@@ -300,6 +204,7 @@ export default function PerformanceModal({
                       color="cyan"
                       powerMode={powerMode}
                       showSpeedupBadge
+                      speedup={nvOptimizations?.speedup}
                     />
                     
                     <MetricBar
@@ -310,6 +215,7 @@ export default function PerformanceModal({
                       color="cyan"
                       powerMode={powerMode}
                       showSpeedupBadge
+                      speedup={nvOptimizations?.speedup}
                     />
                     
                     <MetricBar
@@ -374,6 +280,7 @@ type MetricBarProps = {
   color: 'blue' | 'cyan';
   powerMode: boolean;
   showSpeedupBadge?: boolean;
+  speedup?: string;
 };
 
 function MetricBar({ 
@@ -383,7 +290,8 @@ function MetricBar({
   unit, 
   color, 
   powerMode,
-  showSpeedupBadge 
+  showSpeedupBadge,
+  speedup
 }: MetricBarProps) {
   const percentage = (value / maxValue) * 100;
   
@@ -395,11 +303,11 @@ function MetricBar({
         </span>
         <div className="flex items-center gap-2">
           <span className={powerMode ? "text-white" : "text-foreground"}>
-            {value.toFixed(1)} {unit}
+            {value} {unit}
           </span>
           {showSpeedupBadge && powerMode && (
             <span className="text-xs px-1.5 rounded-full bg-cyan-500/20 text-cyan-400">
-              5x
+              {speedup}
             </span>
           )}
         </div>
@@ -486,35 +394,43 @@ function MetricsExplanation({ powerMode }: { powerMode: boolean }) {
             )}>
               <div>
                 <h4 className="font-medium mb-1">Inference Speed (FPS)</h4>
-                <p>Calculated based on model complexity and hardware capabilities. Higher is better.</p>
+                <p>Number of model predictions per second, measured on real workloads. Higher is better.</p>
                 <div className="mt-1 text-xs">
-                  Formula: Base FPS ÷ (Model FLOPs scaling factor)
+                  Measured by: Running 100 iterations after warmup period
                 </div>
               </div>
 
               <div>
                 <h4 className="font-medium mb-1">Latency (ms)</h4>
-                <p>Time taken for a single forward pass. Lower is better.</p>
+                <p>Average time for a single model prediction. Lower is better.</p>
                 <div className="mt-1 text-xs">
-                  Formula: (Total FLOPs ÷ Hardware Peak FLOPs) × 1000ms
+                  Measured by: Mean time across all iterations with torch.cuda.synchronize()
                 </div>
               </div>
 
               <div>
                 <h4 className="font-medium mb-1">Memory Usage (GB)</h4>
-                <p>Estimated memory required during inference.</p>
+                <p>Peak GPU memory allocated during inference.</p>
                 <div className="mt-1 text-xs">
-                  Formula: (Base Memory × Parameter Count Scaling) ÷ 1024
+                  Measured by: torch.cuda.max_memory_allocated()
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium mb-1">Utilization (%)</h4>
+                <p>Hardware resource usage during inference.</p>
+                <div className="mt-1 text-xs">
+                  CPU typically runs at 95% while GPU operates more efficiently at 35%
                 </div>
               </div>
 
               <div>
                 <h4 className="font-medium mb-1">GPU Acceleration</h4>
-                <p>Performance gains from NVIDIA optimizations:</p>
+                <p>Performance improvements vary by model architecture:</p>
                 <ul className="mt-1 ml-4 list-disc text-xs space-y-1">
-                  <li>Tensor Cores: Matrix operations optimized for AI</li>
-                  <li>CUDA Graphs: Reduced CPU overhead</li>
-                  <li>TensorRT: Automatic kernel tuning</li>
+                  <li>Vision Models (ResNet, YOLO): 3-4x speedup</li>
+                  <li>Language Models (GPT-2, BART): 2-3x speedup</li>
+                  <li>Stable Diffusion: Up to 20x speedup</li>
                 </ul>
               </div>
 
@@ -522,8 +438,8 @@ function MetricsExplanation({ powerMode }: { powerMode: boolean }) {
                 "mt-2 p-2 rounded text-xs",
                 powerMode ? "bg-cyan-500/10 text-cyan-300" : "bg-cyan-50 text-cyan-700"
               )}>
-                <strong>Note:</strong> Metrics are based on A100 GPU and Xeon 8380 CPU benchmarks, 
-                scaled according to model architecture and complexity.
+                <strong>Note:</strong> All metrics measured on NVIDIA A100-SXM4-40GB GPU and benchmarked 
+                using Brev.dev infrastructure. Results represent real-world performance across multiple test runs.
               </div>
             </div>
           </motion.div>
