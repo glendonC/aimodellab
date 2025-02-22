@@ -11,7 +11,8 @@ export class CodeGenerator {
 
   private generateImports(): string {
     return `import tensorflow as tf
-from tensorflow.keras import layers, models`;
+from tensorflow.keras import layers, models
+from tensorflow.keras.layers import Layer, MultiHeadAttention, LayerNormalization`;
   }
 
   private generateModelDefinition(nodes: ModelNode[]): string {
@@ -45,8 +46,44 @@ from tensorflow.keras import layers, models`;
       case 'output':
         return `layers.Dense(${node.attributes?.units || 10}, activation='softmax')`;
       
+      case 'embedding':
+        return `layers.Embedding(
+          input_dim=${node.attributes?.vocabSize || 10000},
+          output_dim=${node.attributes?.embedDim || 256},
+          mask_zero=True
+        )`;
+
+      case 'transformer':
+        return `layers.TransformerEncoderLayer(
+          d_model=${node.attributes?.embedDim || 256},
+          nhead=${node.attributes?.numHeads || 8},
+          dim_feedforward=${node.attributes?.ffDim || 1024},
+          dropout=${node.attributes?.dropout || 0.1}
+        )`;
+
+      case 'gru':
+        return `layers.GRU(
+          units=${node.attributes?.units || 256},
+          return_sequences=True,
+          activation='tanh'
+        )`;
+
+      case 'lstm':
+        return `layers.LSTM(
+          units=${node.attributes?.units || 256},
+          return_sequences=True,
+          activation='tanh'
+        )`;
+
+      case 'attention':
+        return `layers.MultiHeadAttention(
+          num_heads=${node.attributes?.numHeads || 8},
+          key_dim=${node.attributes?.keyDim || 64}
+        )`;
+
       default:
-        return `# Unsupported layer type: ${node.type}`;
+        console.warn(`Layer type not recognized: ${node.type}`);
+        return `layers.Dense(${node.attributes?.units || 64}, activation='relu')  # Fallback for ${node.type}`;
     }
   }
 

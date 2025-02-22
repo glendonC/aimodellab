@@ -180,7 +180,7 @@ export default function ModelDebugger() {
             whileTap={{ scale: 0.95 }}
           >
             <Sparkles className="w-5 h-5" />
-            <span className="font-medium">Optimize with NVIDIA</span>
+            <span className="font-medium">Show NVIDIA Optimizations</span>
           </motion.button>
         )}
 

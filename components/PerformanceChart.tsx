@@ -17,8 +17,9 @@ type PerformanceChartProps = {
     latency: number;
     memory: number;
     utilization: number;
-  };
+  } | null;
   powerMode: boolean;
+  modelId: string;
 };
 
 // Add model-specific noise patterns
@@ -40,40 +41,47 @@ const getModelNoisePattern = (modelId: string, time: number) => {
   return baseNoise;
 };
 
-export function PerformanceChart({
-  cpuMetrics,
-  gpuMetrics,
-  powerMode,
-  modelId
-}: PerformanceChartProps & { modelId: string }) {
-  const data = useMemo(() => {
-    return Array.from({ length: 20 }, (_, i) => {
-      const time = i * 0.5;
-      const noise = getModelNoisePattern(modelId, time);
-      
-      // Add model-specific performance patterns
-      const baseLatency = cpuMetrics.latency;
-      const baseMemory = cpuMetrics.memory;
-      const baseUtilization = cpuMetrics.utilization;
-
-      // Add realistic fluctuations
-      const cpuVariation = Math.sin(time * 0.8) * 0.15 + noise;
-
-      return {
-        time: time.toFixed(1),
-        // CPU metrics with more variation
-        cpuLatency: baseLatency * (1 + cpuVariation),
-        cpuMemory: baseMemory * (1 + cpuVariation * 0.5),
-        cpuUtilization: Math.min(100, baseUtilization * (1 + cpuVariation)),
-        // Only include GPU metrics if GPU is enabled
-        ...(gpuMetrics && {
-          gpuLatency: gpuMetrics.latency * (1 + noise * 0.5),
-          gpuMemory: gpuMetrics.memory * (1 + noise * 0.3),
-          gpuUtilization: Math.min(100, gpuMetrics.utilization * (1 + noise * 0.4))
-        })
-      };
-    });
-  }, [cpuMetrics, gpuMetrics, modelId]);
+export function PerformanceChart({ cpuMetrics, gpuMetrics, powerMode, modelId }: PerformanceChartProps) {
+  // If no GPU metrics, only show CPU data
+  const data = gpuMetrics ? [
+    {
+      name: 'CPU Latency',
+      data: generateTimeSeriesData(cpuMetrics.latency)
+    },
+    {
+      name: 'CPU Memory',
+      data: generateTimeSeriesData(cpuMetrics.memory)
+    },
+    {
+      name: 'CPU Utilization',
+      data: generateTimeSeriesData(cpuMetrics.utilization)
+    },
+    {
+      name: 'GPU Latency',
+      data: generateTimeSeriesData(gpuMetrics.latency)
+    },
+    {
+      name: 'GPU Memory',
+      data: generateTimeSeriesData(gpuMetrics.memory)
+    },
+    {
+      name: 'GPU Utilization',
+      data: generateTimeSeriesData(gpuMetrics.utilization)
+    }
+  ] : [
+    {
+      name: 'CPU Latency',
+      data: generateTimeSeriesData(cpuMetrics.latency)
+    },
+    {
+      name: 'CPU Memory',
+      data: generateTimeSeriesData(cpuMetrics.memory)
+    },
+    {
+      name: 'CPU Utilization',
+      data: generateTimeSeriesData(cpuMetrics.utilization)
+    }
+  ];
 
   const axisStyle = {
     stroke: powerMode ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",

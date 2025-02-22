@@ -1,4 +1,6 @@
 // components/NvidiaOptimizationModal.tsx
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Activity, ArrowRight, Check, X, RefreshCw } from 'lucide-react';
@@ -65,6 +67,120 @@ function getStepStatus(step: string, currentPhase: string): 'waiting' | 'in-prog
   return 'waiting';
 }
 
+type ModelOptimizations = {
+  [key: string]: {
+    performance: {
+      speedup: string;
+      memory: string;
+      latency: string;
+    };
+    optimizations: {
+      tensorRTMode: 'FP16' | 'FP32';
+      layerFusion: boolean;
+      rapidsAcceleration: boolean;
+    };
+  };
+};
+
+const MODEL_OPTIMIZATIONS: ModelOptimizations = {
+  'resnet-50': {
+    performance: {
+      speedup: '2.2x',
+      memory: '-15%',
+      latency: '-55%'
+    },
+    optimizations: {
+      tensorRTMode: 'FP16',
+      layerFusion: true,
+      rapidsAcceleration: true
+    }
+  },
+  'yolov8': {
+    performance: {
+      speedup: '2.8x',
+      memory: '-20%',
+      latency: '-65%'
+    },
+    optimizations: {
+      tensorRTMode: 'FP16',
+      layerFusion: true,
+      rapidsAcceleration: true
+    }
+  },
+  'stable-diffusion': {
+    performance: {
+      speedup: '3.2x',
+      memory: '-25%',
+      latency: '-70%'
+    },
+    optimizations: {
+      tensorRTMode: 'FP16',
+      layerFusion: true,
+      rapidsAcceleration: false
+    }
+  },
+  'vit': {
+    performance: {
+      speedup: '2.4x',
+      memory: '-18%',
+      latency: '-60%'
+    },
+    optimizations: {
+      tensorRTMode: 'FP16',
+      layerFusion: true,
+      rapidsAcceleration: true
+    }
+  },
+  'gpt2': {
+    performance: {
+      speedup: '1.8x',
+      memory: '-15%',
+      latency: '-45%'
+    },
+    optimizations: {
+      tensorRTMode: 'FP32',
+      layerFusion: false,
+      rapidsAcceleration: false
+    }
+  },
+  'bart': {
+    performance: {
+      speedup: '2.0x',
+      memory: '-15%',
+      latency: '-50%'
+    },
+    optimizations: {
+      tensorRTMode: 'FP32',
+      layerFusion: true,
+      rapidsAcceleration: false
+    }
+  },
+  'biobert': {
+    performance: {
+      speedup: '2.1x',
+      memory: '-15%',
+      latency: '-52%'
+    },
+    optimizations: {
+      tensorRTMode: 'FP32',
+      layerFusion: true,
+      rapidsAcceleration: false
+    }
+  },
+  'whisper': {
+    performance: {
+      speedup: '2.3x',
+      memory: '-18%',
+      latency: '-58%'
+    },
+    optimizations: {
+      tensorRTMode: 'FP16',
+      layerFusion: true,
+      rapidsAcceleration: true
+    }
+  }
+};
+
 export function NvidiaOptimizationModal({ 
   isOpen, 
   onClose, 
@@ -76,6 +192,8 @@ export function NvidiaOptimizationModal({
   const [optimizer] = useState(() => new NvidiaOptimizer());
   const [result, setResult] = useState<OptimizationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const modelType = getModelType(modelId);
+  const optimizations = MODEL_OPTIMIZATIONS[modelType];
 
   useEffect(() => {
     if (isOpen && optimizationPhase === 'initial') {
@@ -135,7 +253,7 @@ export function NvidiaOptimizationModal({
               <div className="flex items-center gap-2">
                 <Zap className="w-6 h-6 text-cyan-400" />
                 <h2 className="text-2xl font-bold text-white">
-                  NVIDIA Optimization
+                  NVIDIA Optimizations
                 </h2>
               </div>
               <button
@@ -278,4 +396,30 @@ export function NvidiaOptimizationModal({
       )}
     </AnimatePresence>
   );
+}
+
+function getModelType(modelId: string): string {
+  const id = modelId.toLowerCase();
+  if (id.includes('resnet')) return 'resnet-50';
+  if (id.includes('yolo')) return 'yolov8';
+  if (id.includes('stable')) return 'stable-diffusion';
+  if (id.includes('vit')) return 'vit';
+  if (id.includes('gpt')) return 'gpt2';
+  if (id.includes('bart')) return 'bart';
+  if (id.includes('whisper')) return 'whisper';
+  if (id.includes('biobert')) return 'biobert';
+  return 'resnet-50';
+}
+
+function getModelName(modelId: string): string {
+  const id = modelId.toLowerCase();
+  if (id.includes('resnet')) return 'ResNet-50';
+  if (id.includes('yolo')) return 'YOLOv8';
+  if (id.includes('stable')) return 'Stable Diffusion';
+  if (id.includes('vit')) return 'ViT';
+  if (id.includes('gpt')) return 'GPT-2';
+  if (id.includes('bart')) return 'BART';
+  if (id.includes('whisper')) return 'Whisper';
+  if (id.includes('biobert')) return 'BioBERT';
+  return 'ResNet-50';
 }
