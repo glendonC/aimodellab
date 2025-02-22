@@ -7,6 +7,7 @@ import { X, Copy, Download, Check, Code, Loader2, Sparkles, ChevronDown } from "
 import { cn } from "@/lib/utils";
 import { ModelNode } from "@/lib/model/types";
 import { CodeGenerator } from "@/lib/model/codeGenerator";
+import { useCodeRefactor } from '@/hooks/useCodeRefactor';
 import "react-resizable/css/styles.css";
 
 type CodeExportPanelProps = {
@@ -32,6 +33,7 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
   const dragStart = useRef({ x: 0, y: 0 });
 
   const codeGenerator = new CodeGenerator();
+  const { refactorCode, isRefactoring: isRefactorProcessing, error: refactorError } = useCodeRefactor();
 
   // Generate code when panel opens
   useEffect(() => {
@@ -73,18 +75,25 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
   const handleRefactor = async () => {
     if (!refactorPrompt.trim()) return;
     
-    setIsRefactoring(true);
-    
-    // Simulate AI refactoring process
-    setTimeout(() => {
-      // For now, just add a comment to demonstrate the UI
-      const refactoredCode = `# Refactored based on: ${refactorPrompt}\n# Optimizations applied:\n# - Improved inference speed\n# - Reduced memory usage\n# - Enhanced GPU utilization\n\n${code}`;
-      setCode(refactoredCode);
-      setRefactorExplanation("Applied performance optimizations including tensor operation fusion, memory layout optimization, and GPU-specific enhancements.");
+    try {
+      setIsRefactoring(true);
+      const result = await refactorCode(code, refactorPrompt);
+      
+      if (result.code) {
+        setCode(result.code);
+        setRefactorExplanation(result.explanation);
+      }
+    } catch (err) {
+      console.error('Refactor failed:', err);
+      // Show error in the UI
+      setRefactorExplanation(
+        refactorError || 'Failed to refactor code. Please try again.'
+      );
+    } finally {
       setIsRefactoring(false);
       setIsRefactorOpen(false);
       setRefactorPrompt("");
-    }, 2000);
+    }
   };
 
   // Drag Start
