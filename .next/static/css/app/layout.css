@@ -720,6 +720,12 @@ video {
 .top-full {
   top: 100%;
 }
+.top-24 {
+  top: 6rem;
+}
+.top-\[73px\] {
+  top: 73px;
+}
 .z-0 {
   z-index: 0;
 }
@@ -1392,6 +1398,9 @@ video {
 .border-white\/20 {
   border-color: rgb(255 255 255 / 0.2);
 }
+.border-blue-500\/50 {
+  border-color: rgb(59 130 246 / 0.5);
+}
 .border-l-transparent {
   border-left-color: transparent;
 }
@@ -1714,6 +1723,9 @@ video {
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
+}
+.text-\[10px\] {
+  font-size: 10px;
 }
 .font-bold {
   font-weight: 700;

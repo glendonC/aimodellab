@@ -27,6 +27,16 @@ export function LayerList({
 }: LayerListProps) {
   const [isDragging, setIsDragging] = useState(false);
 
+  const handleNodeUpdate = (nodeId: string, updates: Partial<ModelNode>) => {
+    onNodesChange(
+      nodes.map(node => 
+        node.id === nodeId 
+          ? { ...node, ...updates }
+          : node
+      )
+    );
+  };
+
   if (nodes.length === 0) {
     return (
       <div className={cn(
@@ -56,6 +66,7 @@ export function LayerList({
             onDragEnd={() => setIsDragging(false)}
             onClick={() => onNodeSelect(node.id)}
             onRemove={() => onRemoveNode(node.id)}
+            onUpdate={handleNodeUpdate}
             powerMode={powerMode}
             isSimulating={isSimulating}
             simulationDelay={index * 0.2}
