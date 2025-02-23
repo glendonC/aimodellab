@@ -20,7 +20,7 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [code, setCode] = useState("");
-  const [dimensions] = useState({ width: 600, height: 400 }); // Fixed dimensions
+  const [dimensions] = useState({ width: 800, height: 600 }); // Increased from 600x400
   const [position, setPosition] = useState({ x: 100, y: 100 });
   const [isRefactorOpen, setIsRefactorOpen] = useState(false);
   const [refactorPrompt, setRefactorPrompt] = useState("");
@@ -178,12 +178,13 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
                 className={cn(
                   "w-full h-full p-4 rounded-lg font-mono text-sm overflow-auto",
                   powerMode 
-                    ? "bg-[#0B1623] text-white border border-cyan-500/20 min-h-[calc(100%-2rem)]"
-                    : "bg-white text-black border min-h-[calc(100%-2rem)]"
+                    ? "bg-[#0B1623] text-white border border-cyan-500/20"
+                    : "bg-white text-black border"
                 )}
                 style={{
-                  height: 'calc(100vh - 200px)',
-                  maxWidth: '100%'
+                  height: 'calc(100vh - 180px)',
+                  maxWidth: '100%',
+                  minHeight: dimensions.height - 120
                 }}
               >
                 <code className="block w-full h-full">{code}</code>
@@ -370,11 +371,11 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
                   "backdrop-blur-md"
                 )}
                 style={{
-                  width: 320,  // Reduced width
-                  maxHeight: "80vh",  // Constrain height
-                  left: position.x - 336,  // Position to left
+                  width: 320,
+                  maxHeight: "80vh",
+                  left: position.x - 336,
                   top: position.y,
-                  overflow: "auto"  // Add scrolling
+                  overflow: "auto"
                 }}
               >
                 <div className="p-4 border-b flex items-center justify-between">

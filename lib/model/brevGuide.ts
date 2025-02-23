@@ -51,7 +51,6 @@ const BREV_DEPLOYMENT_GUIDE: BrevGuideConfig = {
     {
       title: "CLI Installation & Setup",
       description: "Install Brev CLI and wait for instance configuration",
-      command: "brew install brev",
       details: "After installation, wait for your instance to be fully configured. This process includes setting up your selected frameworks and NVIDIA tools.",
       icon: Terminal
     },
