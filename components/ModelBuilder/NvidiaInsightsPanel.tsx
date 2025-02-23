@@ -73,7 +73,7 @@ export function NvidiaInsightsPanel({
           "font-medium",
           powerMode ? "text-white" : "text-black"
         )}>
-          NVIDIA AI Insights
+          AI Insights
         </h3>
       </div>
 

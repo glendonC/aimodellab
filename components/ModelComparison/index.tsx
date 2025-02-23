@@ -9,7 +9,6 @@ import { useModelAnalysis } from '@/hooks/useModelAnalysis';
 import { useModelRace } from '@/hooks/useModelRace';
 import { ModelSelector } from './ModelSelector';
 import { RaceControls } from './RaceControls';
-import { PerformanceComparison } from './PerformanceComparison';
 
 type ModelComparisonProps = {
   baseModel: AnalysisResult;
@@ -108,17 +107,6 @@ export default function ModelComparison({
           setRaceProgress={setRaceProgress}
           winner={winner}
           onStartRace={handleStartRace}
-          powerMode={powerMode}
-          modelAGpu={modelAGpu}
-          modelBGpu={modelBGpu}
-        />
-      )}
-
-      {/* Performance Comparison */}
-      {comparisonModel && (
-        <PerformanceComparison
-          baseModel={baseModel}
-          comparisonModel={comparisonModel}
           powerMode={powerMode}
           modelAGpu={modelAGpu}
           modelBGpu={modelBGpu}
