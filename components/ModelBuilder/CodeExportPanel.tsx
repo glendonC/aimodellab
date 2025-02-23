@@ -393,85 +393,85 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
                 </div>
                 
                 <div className="p-4 space-y-4">
-                {deploymentSteps.map((step, index) => (
-  <div
-    key={index}
-    className={cn(
-      "rounded-lg p-4 cursor-pointer transition-colors",
-      powerMode ? "bg-gray-800/50 hover:bg-gray-800/70" : "bg-gray-50 hover:bg-gray-100"
-    )}
-    onClick={() => setExpandedSection(expandedSection === index ? null : index)}
-  >
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <step.icon className={cn(
-          "w-5 h-5",
-          powerMode ? "text-cyan-400" : "text-blue-500"
-        )} />
-        <h4 className={cn(
-          "font-medium",
-          powerMode ? "text-white" : "text-black"
-        )}>
-          {step.title}
-        </h4>
-      </div>
-      <ChevronDown 
-        className={cn(
-          "w-4 h-4 transition-transform",
-          expandedSection === index && "transform rotate-180",
-          powerMode ? "text-white/70" : "text-gray-500"
-        )} 
-      />
-    </div>
+                  {deploymentSteps.map((step, index) => (
+                    <div
+                      key={index}
+                      className={cn(
+                        "rounded-lg p-4 cursor-pointer transition-colors",
+                        powerMode ? "bg-gray-800/50 hover:bg-gray-800/70" : "bg-gray-50 hover:bg-gray-100"
+                      )}
+                      onClick={() => setExpandedSection(expandedSection === index ? null : index)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <step.icon className={cn(
+                            "w-5 h-5",
+                            powerMode ? "text-cyan-400" : "text-blue-500"
+                          )} />
+                          <h4 className={cn(
+                            "font-medium",
+                            powerMode ? "text-white" : "text-black"
+                          )}>
+                            {step.title}
+                          </h4>
+                        </div>
+                        <ChevronDown 
+                          className={cn(
+                            "w-4 h-4 transition-transform",
+                            expandedSection === index && "transform rotate-180",
+                            powerMode ? "text-white/70" : "text-gray-500"
+                          )} 
+                        />
+                      </div>
 
-    {/* Expanded Content */}
-    <AnimatePresence>
-      {expandedSection === index && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="overflow-hidden"
-        >
-          <div className="pt-3 space-y-2">
-            <p className={cn(
-              "text-sm",
-              powerMode ? "text-white/70" : "text-gray-600"
-            )}>
-              {step.description}
-            </p>
+                      {/* Expanded Content */}
+                      <AnimatePresence>
+                        {expandedSection === index && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pt-3 space-y-2">
+                              <p className={cn(
+                                "text-sm",
+                                powerMode ? "text-white/70" : "text-gray-600"
+                              )}>
+                                {step.description}
+                              </p>
 
-            {step.options && (
-              <div className="space-y-1">
-                {step.options.map((option, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "text-xs rounded-md px-2 py-1",
-                      powerMode ? "bg-gray-700/50 text-white/60" : "bg-gray-100 text-gray-600"
-                    )}
-                  >
-                    {option}
-                  </div>
-                ))}
-              </div>
-            )}
+                              {step.options && (
+                                <div className="space-y-1">
+                                  {step.options.map((option, i) => (
+                                    <div
+                                      key={i}
+                                      className={cn(
+                                        "text-xs rounded-md px-2 py-1",
+                                        powerMode ? "bg-gray-700/50 text-white/60" : "bg-gray-100 text-gray-600"
+                                      )}
+                                    >
+                                      {option}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
 
-            {step.command && (
-              <div className={cn(
-                "font-mono text-xs p-2 rounded",
-                powerMode ? "bg-[#0B1623] text-white" : "bg-gray-100 text-black"
-              )}>
-                {step.command}
-              </div>
-            )}
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-      </div>
-    ))}
+                              {step.command && (
+                                <div className={cn(
+                                  "font-mono text-xs p-2 rounded",
+                                  powerMode ? "bg-[#0B1623] text-white" : "bg-gray-100 text-black"
+                                )}>
+                                  {step.command}
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             )}
