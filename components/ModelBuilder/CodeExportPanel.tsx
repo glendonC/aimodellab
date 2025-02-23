@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Copy, Download, Check, Code, Loader2, Sparkles, ChevronDown, ArrowLeftRight } from "lucide-react";
+import { X, Copy, Download, Check, Code, Loader2, Sparkles, ChevronDown, ArrowLeftRight, Server } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModelNode } from "@/lib/model/types";
 import { CodeGenerator } from "@/lib/model/codeGenerator";
 import { useCodeRefactor } from '@/hooks/useCodeRefactor';
+import { BrevGuideGenerator, DeploymentStep } from "@/lib/model/brevGuide";
 
 type CodeExportPanelProps = {
   isOpen: boolean;
@@ -25,6 +26,9 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
   const [refactorPrompt, setRefactorPrompt] = useState("");
   const [isRefactoring, setIsRefactoring] = useState(false);
   const [refactorExplanation, setRefactorExplanation] = useState<string | null>(null);
+  const [showDeploymentGuide, setShowDeploymentGuide] = useState(false);
+  const [deploymentSteps] = useState(() => new BrevGuideGenerator().getDeploymentSteps());
+  const [expandedSection, setExpandedSection] = useState<number | null>(null);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -278,6 +282,21 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
                   {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                   {copied ? "Copied!" : "Copy Code"}
                 </motion.button>
+
+                {/* Add Deployment Guide Button */}
+                <motion.button
+                  onClick={() => setShowDeploymentGuide(!showDeploymentGuide)}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-md",
+                    powerMode ? "bg-cyan-500 text-white hover:bg-cyan-600" : "bg-black text-white hover:bg-gray-800"
+                  )}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Server className="w-4 h-4" />
+                  Deployment Guide
+                </motion.button>
+
                 <motion.button
                   onClick={handleDownloadCode}
                   className={cn(
@@ -333,6 +352,126 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
                   )}>
                     {refactorExplanation}
                   </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Deployment Guide Panel */}
+          <AnimatePresence>
+            {showDeploymentGuide && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className={cn(
+                  "fixed z-50 rounded-lg shadow-xl",
+                  powerMode ? "bg-gray-900/95 border border-cyan-500/30" : "bg-white/95 border border-border",
+                  "backdrop-blur-md"
+                )}
+                style={{
+                  width: 320,  // Reduced width
+                  maxHeight: "80vh",  // Constrain height
+                  left: position.x - 336,  // Position to left
+                  top: position.y,
+                  overflow: "auto"  // Add scrolling
+                }}
+              >
+                <div className="p-4 border-b flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Server className={cn(
+                      "w-5 h-5",
+                      powerMode ? "text-cyan-400" : "text-blue-500"
+                    )} />
+                    <h3 className={cn(
+                      "font-semibold",
+                      powerMode ? "text-white" : "text-black"
+                    )}>
+                      Brev.dev Deployment Guide
+                    </h3>
+                  </div>
+                </div>
+                
+                <div className="p-4 space-y-4">
+                {deploymentSteps.map((step, index) => (
+  <div
+    key={index}
+    className={cn(
+      "rounded-lg p-4 cursor-pointer transition-colors",
+      powerMode ? "bg-gray-800/50 hover:bg-gray-800/70" : "bg-gray-50 hover:bg-gray-100"
+    )}
+    onClick={() => setExpandedSection(expandedSection === index ? null : index)}
+  >
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <step.icon className={cn(
+          "w-5 h-5",
+          powerMode ? "text-cyan-400" : "text-blue-500"
+        )} />
+        <h4 className={cn(
+          "font-medium",
+          powerMode ? "text-white" : "text-black"
+        )}>
+          {step.title}
+        </h4>
+      </div>
+      <ChevronDown 
+        className={cn(
+          "w-4 h-4 transition-transform",
+          expandedSection === index && "transform rotate-180",
+          powerMode ? "text-white/70" : "text-gray-500"
+        )} 
+      />
+    </div>
+
+    {/* Expanded Content */}
+    <AnimatePresence>
+      {expandedSection === index && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="overflow-hidden"
+        >
+          <div className="pt-3 space-y-2">
+            <p className={cn(
+              "text-sm",
+              powerMode ? "text-white/70" : "text-gray-600"
+            )}>
+              {step.description}
+            </p>
+
+            {step.options && (
+              <div className="space-y-1">
+                {step.options.map((option, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "text-xs rounded-md px-2 py-1",
+                      powerMode ? "bg-gray-700/50 text-white/60" : "bg-gray-100 text-gray-600"
+                    )}
+                  >
+                    {option}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {step.command && (
+              <div className={cn(
+                "font-mono text-xs p-2 rounded",
+                powerMode ? "bg-[#0B1623] text-white" : "bg-gray-100 text-black"
+              )}>
+                {step.command}
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+      </div>
+    ))}
                 </div>
               </motion.div>
             )}
