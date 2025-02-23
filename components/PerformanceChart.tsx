@@ -6,71 +6,20 @@ import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveCont
 import { cn } from '@/lib/utils';
 
 type PerformanceChartProps = {
-  cpuMetrics: {
-    fps: number;
-    latency: number;
-    memory: number;
-    utilization: number;
-  };
-  gpuMetrics: {
-    fps: number;
-    latency: number;
-    memory: number;
-    utilization: number;
-  } | null;
+  data: {
+    time: number;
+    cpuLatency: number;
+    cpuMemory: number;
+    cpuUtilization: number;
+    gpuLatency: number;
+    gpuMemory: number;
+    gpuUtilization: number;
+  }[];
   powerMode: boolean;
   modelId: string;
 };
 
-function generateTimeSeriesData(baseValue: number, points: number = 20): { time: number; value: number }[] {
-  return Array.from({ length: points }, (_, i) => ({
-    time: i,
-    value: baseValue + (Math.random() - 0.5) * baseValue * 0.1
-  }));
-}
-
-export function PerformanceChart({ cpuMetrics, gpuMetrics, powerMode, modelId }: PerformanceChartProps) {
-  // If no GPU metrics, only show CPU data
-  const data = gpuMetrics ? [
-    {
-      name: 'CPU Latency',
-      data: generateTimeSeriesData(cpuMetrics.latency)
-    },
-    {
-      name: 'CPU Memory',
-      data: generateTimeSeriesData(cpuMetrics.memory)
-    },
-    {
-      name: 'CPU Utilization',
-      data: generateTimeSeriesData(cpuMetrics.utilization)
-    },
-    {
-      name: 'GPU Latency',
-      data: generateTimeSeriesData(gpuMetrics.latency)
-    },
-    {
-      name: 'GPU Memory',
-      data: generateTimeSeriesData(gpuMetrics.memory)
-    },
-    {
-      name: 'GPU Utilization',
-      data: generateTimeSeriesData(gpuMetrics.utilization)
-    }
-  ] : [
-    {
-      name: 'CPU Latency',
-      data: generateTimeSeriesData(cpuMetrics.latency)
-    },
-    {
-      name: 'CPU Memory',
-      data: generateTimeSeriesData(cpuMetrics.memory)
-    },
-    {
-      name: 'CPU Utilization',
-      data: generateTimeSeriesData(cpuMetrics.utilization)
-    }
-  ];
-
+export function PerformanceChart({ data, powerMode, modelId }: PerformanceChartProps) {
   const axisStyle = {
     stroke: powerMode ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
     fill: powerMode ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)"
@@ -124,7 +73,15 @@ export function PerformanceChart({ cpuMetrics, gpuMetrics, powerMode, modelId }:
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 45 }}>
+      <LineChart 
+        data={data} 
+        margin={{ 
+          top: 5, 
+          right: 45,  // Even more space for right label
+          left: 20, 
+          bottom: 35  // Reduced even further
+        }}
+      >
         <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
         <XAxis 
           {...axisStyle} 
@@ -143,7 +100,7 @@ export function PerformanceChart({ cpuMetrics, gpuMetrics, powerMode, modelId }:
           }}
         />
 
-        {/* Secondary Y-axis for memory and utilization */}
+        {/* Secondary Y-axis */}
         <YAxis 
           {...axisStyle}
           yAxisId="right"
@@ -151,12 +108,25 @@ export function PerformanceChart({ cpuMetrics, gpuMetrics, powerMode, modelId }:
           label={{ 
             value: 'Memory (GB) / Utilization (%)', 
             angle: 90, 
-            position: 'insideRight' 
+            position: 'insideRight',
+            offset: 10,
+            dy: 100
           }}
         />
 
         <Tooltip {...tooltipStyle} />
-        <Legend {...legendStyle} />
+        <Legend 
+          {...legendStyle}
+          wrapperStyle={{
+            ...legendStyle.wrapperStyle,
+            paddingTop: "5px",
+            bottom: -15,
+            fontSize: "12px",
+            display: "flex",
+            justifyContent: "center",
+            gap: "1.5rem"
+          }}
+        />
 
         {/* CPU Lines - always show */}
         <Line 
@@ -188,7 +158,7 @@ export function PerformanceChart({ cpuMetrics, gpuMetrics, powerMode, modelId }:
         />
 
         {/* GPU Lines - only show when GPU metrics exist */}
-        {gpuMetrics && (
+        {data.some(d => d.gpuLatency) && (
           <>
             <Line 
               yAxisId="left"
