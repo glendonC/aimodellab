@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { AnalysisResult } from '@/lib/model/types';
 import { RaceProgress } from './RaceProgress';
 import { useEffect } from 'react';
+import { MODEL_METRICS } from '@/lib/model/metrics';
 
 type RaceControlsProps = {
   baseModel: AnalysisResult;
@@ -35,41 +36,48 @@ export function RaceControls({
   const baseModelName = baseModel.graph.metadata.modelId?.split('/').pop() || 'Model A';
   const comparisonModelName = comparisonModel.graph.metadata.modelId?.split('/').pop() || 'Model B';
 
-  // Calculate actual speeds based on inference times and GPU mode
+
   const getModelSpeed = (model: AnalysisResult, useGpu: boolean) => {
-    // Convert inference time to operations per second (higher number = faster)
-    const baseSpeed = 1000 / model.performance.inferenceTime;
+    const modelId = model.graph.metadata.modelId?.toLowerCase() || '';
+    // Extract base model name and remove any formatting
+    const baseModelId = modelId.split('/').pop()?.replace('-', '') || '';
     
-    if (useGpu) {
-      const modelType = model.graph.metadata.modelId?.toLowerCase() || '';
-      let speedupFactor = 2; // Default GPU speedup
-
-      if (modelType.includes('transformer')) speedupFactor = 4;
-      else if (modelType.includes('cnn')) speedupFactor = 3;
-      else if (modelType.includes('yolo')) speedupFactor = 2.8;
-      
-      return baseSpeed * speedupFactor;
+    const metrics = MODEL_METRICS[baseModelId];
+    if (!metrics) {
+      console.warn(`No metrics found for model: ${baseModelId}`);
+      return 1; // Default fallback speed
     }
-    
-    return baseSpeed;
+  
+    // Use actual inference speeds from our benchmarks
+    return useGpu ? metrics.gpu.inferenceSpeed : metrics.cpu.inferenceSpeed;
   };
-
-  const modelASpeed = getModelSpeed(baseModel, modelAGpu);
-  const modelBSpeed = getModelSpeed(comparisonModel, modelBGpu);
-
-  // Use these speeds to update progress in the parent component
+  
   useEffect(() => {
     if (isRacing) {
+      const speedA = getModelSpeed(baseModel, modelAGpu);
+      const speedB = getModelSpeed(comparisonModel, modelBGpu);
+      
+      const maxSpeed = Math.max(speedA, speedB);
+      const normalizedSpeedA = (speedA / maxSpeed) * 0.4;
+      const normalizedSpeedB = (speedB / maxSpeed) * 0.4;
+
       const interval = setInterval(() => {
         setRaceProgress(prev => ({
-          modelA: prev.modelA + (66.7 / 100), // Scale down for smoother animation
-          modelB: prev.modelB + (357.1 / 100)
+          modelA: Math.min(1, prev.modelA + normalizedSpeedA),
+          modelB: Math.min(1, prev.modelB + normalizedSpeedB)
         }));
       }, 16);
 
       return () => clearInterval(interval);
     }
-  }, [isRacing]);
+  }, [isRacing, baseModel, comparisonModel, modelAGpu, modelBGpu]);
+
+  console.log({
+    baseModelName,
+    baseModelMetrics: MODEL_METRICS[baseModelName.toLowerCase()],
+    comparisonModelName,
+    comparisonModelMetrics: MODEL_METRICS[comparisonModelName.toLowerCase()]
+  });
 
   return (
     <div className="p-4 border-t">
@@ -105,6 +113,8 @@ export function RaceControls({
               isWinner={winner === 'modelA'}
               powerMode={powerMode}
               useGpu={modelAGpu}
+              speed={getModelSpeed(baseModel, modelAGpu)}
+              metrics={MODEL_METRICS[baseModelName.toLowerCase().replace('-', '')]}
             />
             <RaceProgress
               label="Model B"
@@ -112,6 +122,8 @@ export function RaceControls({
               isWinner={winner === 'modelB'}
               powerMode={powerMode}
               useGpu={modelBGpu}
+              speed={getModelSpeed(comparisonModel, modelBGpu)}
+              metrics={MODEL_METRICS[comparisonModelName.toLowerCase().replace('-', '')]}
             />
           </motion.div>
         )}
@@ -143,13 +155,6 @@ export function RaceControls({
                 {winner === 'modelA' ? baseModelName : comparisonModelName} Wins!
               </span>
             </div>
-            <p className={cn(
-              "text-sm",
-              powerMode ? "text-white/70" : "text-muted-foreground"
-            )}>
-              {winner === 'modelA' ? baseModelName : comparisonModelName} completed inference{' '}
-              {Math.abs(baseModel.performance.inferenceTime - comparisonModel.performance.inferenceTime).toFixed(1)}ms faster
-            </p>
           </motion.div>
         )}
       </AnimatePresence>

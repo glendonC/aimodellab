@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Flag, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ModelMetrics } from '@/lib/model/metrics';
 
 type RaceProgressProps = {
   label: string;
@@ -10,6 +11,8 @@ type RaceProgressProps = {
   isWinner: boolean;
   powerMode: boolean;
   useGpu: boolean;
+  speed: number;
+  metrics?: ModelMetrics;
 };
 
 export function RaceProgress({
@@ -17,8 +20,12 @@ export function RaceProgress({
   progress,
   isWinner,
   powerMode,
-  useGpu
+  useGpu,
+  speed,
+  metrics
 }: RaceProgressProps) {
+  const currentMetrics = metrics ? (useGpu ? metrics.gpu : metrics.cpu) : null;
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -36,7 +43,19 @@ export function RaceProgress({
             )} />
           )}
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Performance Stats */}
+        <div className="flex items-center gap-4">
+          {currentMetrics && (
+            <div className="flex gap-3 text-xs">
+              <span className={powerMode ? "text-white/70" : "text-gray-600"}>
+                {currentMetrics.inferenceSpeed.toFixed(2)} FPS
+              </span>
+              <span className={powerMode ? "text-white/70" : "text-gray-600"}>
+                {currentMetrics.latency.toFixed(2)}ms
+              </span>
+            </div>
+          )}
           <span className={cn(
             "text-sm",
             powerMode ? "text-white/70" : "text-muted-foreground"
