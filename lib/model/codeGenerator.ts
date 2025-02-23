@@ -13,19 +13,18 @@ export class CodeGenerator {
 
   private generateImports(): string {
     return `import tensorflow as tf
-from tensorflow.keras import layers, models
-from tensorflow.keras.layers import Layer, MultiHeadAttention, LayerNormalization`;
+from tensorflow.keras import layers, models, regularizers`;
   }
 
   private generateModelDefinition(nodes: ModelNode[]): string {
-    const layerDefinitions = nodes.map(node => this.generateLayerCode(node));
+    const layerDefinitions = nodes.map((node, index) => this.generateLayerCode(node, index));
     
     return `model = models.Sequential([
     ${layerDefinitions.join(',\n    ')}
 ])`;
   }
 
-  private generateLayerCode(node: ModelNode): string {
+  private generateLayerCode(node: ModelNode, index: number): string {
     const attrs = node.attributes || {};
     
     switch (node.type) {
@@ -39,7 +38,8 @@ from tensorflow.keras.layers import Layer, MultiHeadAttention, LayerNormalizatio
           strides=(${attrs.strides || 1}, ${attrs.strides || 1}),
           padding='${attrs.padding || 'same'}',
           dilation_rate=(${attrs.dilationRate || 1}, ${attrs.dilationRate || 1}),
-          activation='${attrs.activation || 'relu'}'
+          activation='${attrs.activation || 'relu'}'${index === 0 ? `,
+          input_shape=${JSON.stringify(node.inputShapes[0].slice(1))}` : ''}
         )`;
       
       case 'pooling':
@@ -56,14 +56,13 @@ from tensorflow.keras.layers import Layer, MultiHeadAttention, LayerNormalizatio
         return `layers.Dense(
           units=${attrs.units || 128},
           activation='${attrs.activation || 'relu'}',
-          use_bias=${attrs.useBias !== undefined ? attrs.useBias : true},
           kernel_initializer='${attrs.kernelInit || 'glorot_uniform'}',
-          kernel_regularizer=tf.keras.regularizers.l2(${attrs.l2Reg || 0})
+          kernel_regularizer=regularizers.l2(${attrs.l2Reg || 0})
         )`;
       
       case 'dropout':
         return `layers.Dropout(
-          rate=${attrs.rate || 0.5}${attrs.seed ? `,\n          seed=${attrs.seed}` : ''}
+          rate=${attrs.rate || 0.5}
         )`;
       
       case 'embedding':
@@ -71,16 +70,19 @@ from tensorflow.keras.layers import Layer, MultiHeadAttention, LayerNormalizatio
           input_dim=${attrs.inputDim || 10000},
           output_dim=${attrs.outputDim || 128},
           mask_zero=${attrs.maskZero !== undefined ? attrs.maskZero : true},
-          embeddings_regularizer=tf.keras.regularizers.l2(${attrs.embeddingsRegularizer || 0})
+          embeddings_regularizer=regularizers.l2(${attrs.embeddingsRegularizer || 0})
         )`;
 
       case 'transformer':
-        return `layers.TransformerEncoderLayer(
-          d_model=${attrs.hiddenSize || 256},
-          nhead=${attrs.numHeads || 8},
-          dim_feedforward=${attrs.feedforwardSize || 1024},
-          dropout=${attrs.dropoutRate || 0.1}
-        )`;
+      return `TransformerBlock(
+          embed_dim=${attrs.hiddenSize || 256},
+          num_heads=${attrs.numHeads || 8},
+          ff_dim=${attrs.feedforwardSize || 1024},
+          dropout_rate=${attrs.dropoutRate || 0.1}
+      )`;
+
+      case 'globalavgpool1d':
+      return `layers.GlobalAveragePooling1D()`;
 
       case 'output':
         return `layers.Dense(
