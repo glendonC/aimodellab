@@ -213,21 +213,23 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       className={cn(
-                        "absolute left-0 right-0 mt-2 p-3 rounded-lg shadow-lg z-50",
+                        "absolute left-0 right-0 mt-2 p-3 rounded-lg shadow-lg z-50 min-w-[400px]",
                         powerMode ? "bg-gray-800 border border-cyan-500/30" : "bg-white border border-gray-200"
                       )}
                     >
-                      <input
-                        type="text"
+                      <textarea
                         value={refactorPrompt}
                         onChange={(e) => setRefactorPrompt(e.target.value)}
-                        placeholder="e.g., Optimize for inference speed"
+                        placeholder="Enter your refactoring request, e.g.: Optimize this model for... Apply ... to the code."
                         className={cn(
-                          "w-full px-3 py-2 rounded-md mb-2",
+                          "w-full px-3 py-2 rounded-md mb-2 min-h-[120px] resize-y font-mono text-sm",
                           powerMode 
-                            ? "bg-gray-900 text-white border border-white/10" 
-                            : "bg-gray-100 text-black border border-gray-200"
+                            ? "bg-gray-900 text-white border border-white/10 placeholder:text-white/30" 
+                            : "bg-gray-100 text-black border border-gray-200 placeholder:text-gray-400"
                         )}
+                        style={{
+                          maxHeight: '300px'
+                        }}
                       />
                       <motion.button
                         onClick={handleRefactor}
