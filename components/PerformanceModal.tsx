@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Activity, Cpu, Zap, LineChart, Info, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnalysisResult } from '@/lib/model/types';
-import { PerformanceChart } from './PerformanceChart';
 import { PerformanceCalculator } from '@/lib/model/performance';
 import { useState } from 'react';
 
@@ -244,26 +243,6 @@ export default function PerformanceModal({
               {/* Add the explanation panel */}
               <MetricsExplanation powerMode={powerMode} />
 
-              {/* Performance Chart */}
-              <div className={cn(
-                "rounded-lg p-4",
-                powerMode ? "bg-gray-800/50" : "bg-muted"
-              )}>
-                <h3 className={cn(
-                  "font-semibold mb-4",
-                  powerMode ? "text-white" : "text-foreground"
-                )}>
-                  Performance Over Time
-                </h3>
-                <div className="h-64">
-                  <PerformanceChart
-                    cpuMetrics={cpuMetrics}
-                    gpuMetrics={gpuMetrics}
-                    powerMode={powerMode}
-                    modelId={analysisResult.graph.metadata.modelId || 'resnet'}
-                  />
-                </div>
-              </div>
             </div>
           </motion.div>
         </motion.div>
