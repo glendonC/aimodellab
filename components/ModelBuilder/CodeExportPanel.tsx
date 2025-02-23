@@ -172,11 +172,17 @@ export function CodeExportPanel({ isOpen, onClose, powerMode, nodes }: CodeExpor
             <div className="flex-1 p-4 overflow-auto">
               <pre
                 className={cn(
-                  "w-full h-full p-4 rounded-lg font-mono text-sm",
-                  powerMode ? "bg-black/90 text-white" : "bg-white text-black border"
+                  "w-full h-full p-4 rounded-lg font-mono text-sm overflow-auto",
+                  powerMode 
+                    ? "bg-[#0B1623] text-white border border-cyan-500/20 min-h-[calc(100%-2rem)]"
+                    : "bg-white text-black border min-h-[calc(100%-2rem)]"
                 )}
+                style={{
+                  height: 'calc(100vh - 200px)',
+                  maxWidth: '100%'
+                }}
               >
-                <code>{code}</code>
+                <code className="block w-full h-full">{code}</code>
               </pre>
             </div>
 
